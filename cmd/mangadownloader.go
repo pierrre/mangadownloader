@@ -6,12 +6,19 @@ import (
 )
 
 func main() {
-	service := &mangadownloader.MangaReaderService{}
+	var service mangadownloader.Service = &mangadownloader.MangaReaderService{}
 	mangas, err := service.Mangas()
 	if err != nil {
 		panic(err)
 	}
 	for _, manga := range mangas {
 		fmt.Println(manga)
+		chapters, err := manga.Chapters()
+		if err != nil {
+			panic(err)
+		}
+		for _, chapter := range chapters {
+			fmt.Println(chapter)
+		}
 	}
 }

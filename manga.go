@@ -5,5 +5,10 @@ import (
 )
 
 type Manga struct {
-	Url *url.URL
+	Url     *url.URL
+	Service Service
+}
+
+func (manga *Manga) Chapters() ([]*Chapter, error) {
+	return manga.Service.Chapters(manga)
 }
