@@ -19,6 +19,13 @@ func main() {
 		}
 		for _, chapter := range chapters {
 			fmt.Println("	" + fmt.Sprint(chapter))
+			pages, err := chapter.Pages()
+			if err != nil {
+				panic(err)
+			}
+			for _, page := range pages {
+				fmt.Println("		" + fmt.Sprint(page))
+			}
 		}
 	}
 }

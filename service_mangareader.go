@@ -98,6 +98,50 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 	return chapters, nil
 }
 
+func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
+	response, err := http.Get(chapter.Url.String())
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	rootNode, err := html.Parse(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	optionSelector, err := selector.Selector("#pageMenu option")
+	if err != nil {
+		return nil, err
+	}
+
+	optionNodes := optionSelector.Find(rootNode)
+
+	pages := make([]*Page, 0, len(optionNodes))
+	for _, optionNode := range optionNodes {
+		var value string
+		for _, attr := range optionNode.Attr {
+			if attr.Key == "value" {
+				value = attr.Val
+			}
+		}
+		if len(value) == 0 {
+			continue
+		}
+		pageUrl, err := url.Parse("http://www.mangareader.net" + value)
+		if err != nil {
+			return nil, err
+		}
+		page := &Page{
+			Url:     pageUrl,
+			Service: service,
+		}
+		pages = append(pages, page)
+	}
+
+	return pages, nil
+}
+
 func (service *MangaReaderService) String() string {
 	return "MangaReaderService"
 }
