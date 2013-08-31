@@ -18,7 +18,7 @@ func main() {
 			panic(err)
 		}
 		for _, chapter := range chapters {
-			fmt.Println(chapter)
+			fmt.Println("	" + fmt.Sprint(chapter))
 		}
 	}
 }
