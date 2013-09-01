@@ -32,15 +32,7 @@ func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 
 	mangas := make([]*Manga, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		var href string
-		for _, attr := range linkNode.Attr {
-			if attr.Key == "href" {
-				href = attr.Val
-			}
-		}
-		if len(href) == 0 {
-			continue
-		}
+		href := getHtmlNodeAttribute(linkNode, "href")
 		mangaUrl, err := url.Parse("http://www.mangareader.net" + href)
 		if err != nil {
 			return nil, err
@@ -76,15 +68,7 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		var href string
-		for _, attr := range linkNode.Attr {
-			if attr.Key == "href" {
-				href = attr.Val
-			}
-		}
-		if len(href) == 0 {
-			continue
-		}
+		href := getHtmlNodeAttribute(linkNode, "href")
 		chapterUrl, err := url.Parse("http://www.mangareader.net" + href)
 		if err != nil {
 			return nil, err
@@ -120,15 +104,7 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		var value string
-		for _, attr := range optionNode.Attr {
-			if attr.Key == "value" {
-				value = attr.Val
-			}
-		}
-		if len(value) == 0 {
-			continue
-		}
+		value := getHtmlNodeAttribute(optionNode, "value")
 		pageUrl, err := url.Parse("http://www.mangareader.net" + value)
 		if err != nil {
 			return nil, err
