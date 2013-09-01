@@ -6,31 +6,33 @@ import (
 )
 
 func main() {
-	var service mangadownloader.Service = &mangadownloader.MangaReaderService{}
-	mangas, err := service.Mangas()
-	if err != nil {
-		panic(err)
-	}
-	for _, manga := range mangas {
-		fmt.Println(manga)
-		chapters, err := manga.Chapters()
+	mangaDownloader := mangadownloader.CreateDefaultMangeDownloader()
+	for _, service := range mangaDownloader.Services {
+		mangas, err := service.Mangas()
 		if err != nil {
 			panic(err)
 		}
-		for _, chapter := range chapters {
-			fmt.Println("	" + fmt.Sprint(chapter))
-			pages, err := chapter.Pages()
+		for _, manga := range mangas {
+			fmt.Println(manga)
+			chapters, err := manga.Chapters()
 			if err != nil {
 				panic(err)
 			}
-			for _, page := range pages {
-				fmt.Println("		" + fmt.Sprint(page))
-
-				image, err := page.Image()
+			for _, chapter := range chapters {
+				fmt.Println("	" + fmt.Sprint(chapter))
+				pages, err := chapter.Pages()
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println("		" + fmt.Sprint(image))
+				for _, page := range pages {
+					fmt.Println("		" + fmt.Sprint(page))
+
+					image, err := page.Image()
+					if err != nil {
+						panic(err)
+					}
+					fmt.Println("		" + fmt.Sprint(image))
+				}
 			}
 		}
 	}
