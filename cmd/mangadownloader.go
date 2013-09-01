@@ -25,6 +25,12 @@ func main() {
 			}
 			for _, page := range pages {
 				fmt.Println("		" + fmt.Sprint(page))
+
+				image, err := page.Image()
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("		" + fmt.Sprint(image))
 			}
 		}
 	}

@@ -8,3 +8,7 @@ type Page struct {
 	Url     *url.URL
 	Service Service
 }
+
+func (page *Page) Image() (*Image, error) {
+	return page.Service.Image(page)
+}

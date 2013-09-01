@@ -3,6 +3,7 @@ package mangadownloader
 import (
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
+	"errors"
 	"net/http"
 	"net/url"
 )
@@ -140,6 +141,44 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 	}
 
 	return pages, nil
+}
+
+func (service *MangaReaderService) Image(page *Page) (*Image, error) {
+	response, err := http.Get(page.Url.String())
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	rootNode, err := html.Parse(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	imgSelector, err := selector.Selector("#img")
+	if err != nil {
+		return nil, err
+	}
+
+	imgNodes := imgSelector.Find(rootNode)
+	if len(imgNodes) < 1 {
+		return nil, errors.New("Image node not found")
+	}
+	imgNode := imgNodes[0]
+
+	var src string
+	for _, attr := range imgNode.Attr {
+		if attr.Key == "src" {
+			src = attr.Val
+		}
+	}
+	imageUrl, err := url.Parse(src)
+	image := &Image{
+		Url:     imageUrl,
+		Service: service,
+	}
+
+	return image, nil
 }
 
 func (service *MangaReaderService) String() string {
