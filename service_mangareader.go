@@ -2,23 +2,20 @@ package mangadownloader
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
-	"code.google.com/p/go.net/html"
 	"errors"
-	"net/http"
 	"net/url"
 )
 
 type MangaReaderService struct {
+	Md *MangaDownloader
 }
 
 func (service *MangaReaderService) Mangas() ([]*Manga, error) {
-	response, err := http.Get("http://www.mangareader.net/alphabetical")
+	u, err := url.Parse("http://www.mangareader.net/alphabetical")
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
-
-	rootNode, err := html.Parse(response.Body)
+	rootNode, err := service.Md.HttpGetHtml(u)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +24,6 @@ func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	linkNodes := linkSelector.Find(rootNode)
 
 	mangas := make([]*Manga, 0, len(linkNodes))
@@ -48,13 +44,7 @@ func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 }
 
 func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
-	response, err := http.Get(manga.Url.String())
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	rootNode, err := html.Parse(response.Body)
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +53,6 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	linkNodes := linkSelector.Find(rootNode)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
@@ -84,13 +73,7 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 }
 
 func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
-	response, err := http.Get(chapter.Url.String())
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	rootNode, err := html.Parse(response.Body)
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +82,6 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	optionNodes := optionSelector.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
@@ -120,13 +102,7 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 }
 
 func (service *MangaReaderService) Image(page *Page) (*Image, error) {
-	response, err := http.Get(page.Url.String())
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	rootNode, err := html.Parse(response.Body)
+	rootNode, err := service.Md.HttpGetHtml(page.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +111,6 @@ func (service *MangaReaderService) Image(page *Page) (*Image, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	imgNodes := imgSelector.Find(rootNode)
 	if len(imgNodes) < 1 {
 		return nil, errors.New("Image node not found")
