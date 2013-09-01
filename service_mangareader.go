@@ -53,7 +53,7 @@ func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 	mangas := make([]*Manga, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
 		mangaUrl := urlCopy(serviceMangaReaderUrlBase)
-		mangaUrl.Path = getHtmlNodeAttribute(linkNode, "href")
+		mangaUrl.Path = htmlGetNodeAttribute(linkNode, "href")
 		manga := &Manga{
 			Url:     mangaUrl,
 			Service: service,
@@ -75,7 +75,7 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
 		chapterUrl := urlCopy(serviceMangaReaderUrlBase)
-		chapterUrl.Path = getHtmlNodeAttribute(linkNode, "href")
+		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
 			Url:     chapterUrl,
 			Service: service,
@@ -97,7 +97,7 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
 		pageUrl := urlCopy(serviceMangaReaderUrlBase)
-		pageUrl.Path = getHtmlNodeAttribute(optionNode, "value")
+		pageUrl.Path = htmlGetNodeAttribute(optionNode, "value")
 		page := &Page{
 			Url:     pageUrl,
 			Service: service,
@@ -120,7 +120,7 @@ func (service *MangaReaderService) Image(page *Page) (*Image, error) {
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(getHtmlNodeAttribute(imgNode, "src"))
+	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
