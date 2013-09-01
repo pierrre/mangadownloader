@@ -6,33 +6,54 @@ import (
 	"net/url"
 )
 
+const (
+	serviceMangaReaderDomain     = "www.mangareader.net"
+	serviceMangaReaderPathMangas = "/alphabetical"
+)
+
+var (
+	serviceMangaReaderUrlBase   *url.URL
+	serviceMangaReaderUrlMangas *url.URL
+
+	serviceMangaReaderHtmlSelectorMangas   *selector.Chain
+	serviceMangaReaderHtmlSelectorChapters *selector.Chain
+	serviceMangaReaderHtmlSelectorPages    *selector.Chain
+	serviceMangaReaderHtmlSelectorImage    *selector.Chain
+)
+
+func init() {
+	serviceMangaReaderUrlBase = new(url.URL)
+	serviceMangaReaderUrlBase.Scheme = "http"
+	serviceMangaReaderUrlBase.Host = serviceMangaReaderDomain
+
+	serviceMangaReaderUrlMangas = urlCopy(serviceMangaReaderUrlBase)
+	serviceMangaReaderUrlMangas.Path = serviceMangaReaderPathMangas
+
+	serviceMangaReaderHtmlSelectorMangas, _ = selector.Selector("ul.series_alpha a")
+
+	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#listing a")
+
+	serviceMangaReaderHtmlSelectorPages, _ = selector.Selector("#pageMenu option")
+
+	serviceMangaReaderHtmlSelectorImage, _ = selector.Selector("#img")
+}
+
 type MangaReaderService struct {
 	Md *MangaDownloader
 }
 
 func (service *MangaReaderService) Mangas() ([]*Manga, error) {
-	u, err := url.Parse("http://www.mangareader.net/alphabetical")
-	if err != nil {
-		return nil, err
-	}
-	rootNode, err := service.Md.HttpGetHtml(u)
+	rootNode, err := service.Md.HttpGetHtml(serviceMangaReaderUrlMangas)
 	if err != nil {
 		return nil, err
 	}
 
-	linkSelector, err := selector.Selector("ul.series_alpha a")
-	if err != nil {
-		return nil, err
-	}
-	linkNodes := linkSelector.Find(rootNode)
+	linkNodes := serviceMangaReaderHtmlSelectorMangas.Find(rootNode)
 
 	mangas := make([]*Manga, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		href := getHtmlNodeAttribute(linkNode, "href")
-		mangaUrl, err := url.Parse("http://www.mangareader.net" + href)
-		if err != nil {
-			return nil, err
-		}
+		mangaUrl := urlCopy(serviceMangaReaderUrlBase)
+		mangaUrl.Path = getHtmlNodeAttribute(linkNode, "href")
 		manga := &Manga{
 			Url:     mangaUrl,
 			Service: service,
@@ -49,19 +70,12 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 		return nil, err
 	}
 
-	linkSelector, err := selector.Selector("#listing a")
-	if err != nil {
-		return nil, err
-	}
-	linkNodes := linkSelector.Find(rootNode)
+	linkNodes := serviceMangaReaderHtmlSelectorChapters.Find(rootNode)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		href := getHtmlNodeAttribute(linkNode, "href")
-		chapterUrl, err := url.Parse("http://www.mangareader.net" + href)
-		if err != nil {
-			return nil, err
-		}
+		chapterUrl := urlCopy(serviceMangaReaderUrlBase)
+		chapterUrl.Path = getHtmlNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
 			Url:     chapterUrl,
 			Service: service,
@@ -78,19 +92,12 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 		return nil, err
 	}
 
-	optionSelector, err := selector.Selector("#pageMenu option")
-	if err != nil {
-		return nil, err
-	}
-	optionNodes := optionSelector.Find(rootNode)
+	optionNodes := serviceMangaReaderHtmlSelectorPages.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		value := getHtmlNodeAttribute(optionNode, "value")
-		pageUrl, err := url.Parse("http://www.mangareader.net" + value)
-		if err != nil {
-			return nil, err
-		}
+		pageUrl := urlCopy(serviceMangaReaderUrlBase)
+		pageUrl.Path = getHtmlNodeAttribute(optionNode, "value")
 		page := &Page{
 			Url:     pageUrl,
 			Service: service,
@@ -107,23 +114,16 @@ func (service *MangaReaderService) Image(page *Page) (*Image, error) {
 		return nil, err
 	}
 
-	imgSelector, err := selector.Selector("#img")
-	if err != nil {
-		return nil, err
-	}
-	imgNodes := imgSelector.Find(rootNode)
+	imgNodes := serviceMangaReaderHtmlSelectorImage.Find(rootNode)
 	if len(imgNodes) < 1 {
 		return nil, errors.New("Image node not found")
 	}
 	imgNode := imgNodes[0]
 
-	var src string
-	for _, attr := range imgNode.Attr {
-		if attr.Key == "src" {
-			src = attr.Val
-		}
+	imageUrl, err := url.Parse(getHtmlNodeAttribute(imgNode, "src"))
+	if err != nil {
+		return nil, err
 	}
-	imageUrl, err := url.Parse(src)
 	image := &Image{
 		Url:     imageUrl,
 		Service: service,
