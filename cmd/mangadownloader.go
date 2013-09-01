@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	mangaDownloader := mangadownloader.CreateDefaultMangeDownloader()
-	for _, service := range mangaDownloader.Services {
+	md := mangadownloader.CreateDefaultMangeDownloader()
+	for _, service := range md.Services {
 		mangas, err := service.Mangas()
 		if err != nil {
 			panic(err)
