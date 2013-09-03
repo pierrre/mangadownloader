@@ -31,7 +31,11 @@ func main() {
 				}
 				for _, page := range pages {
 					fmt.Println("		" + fmt.Sprint(page))
-
+					pageIndex, err := page.Index()
+					if err != nil {
+						panic(err)
+					}
+					fmt.Println("		" + fmt.Sprint(pageIndex))
 					image, err := page.Image()
 					if err != nil {
 						panic(err)

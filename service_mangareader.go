@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -19,6 +20,7 @@ var (
 	serviceMangaReaderHtmlSelectorMangaName *selector.Chain
 	serviceMangaReaderHtmlSelectorChapters  *selector.Chain
 	serviceMangaReaderHtmlSelectorPages     *selector.Chain
+	serviceMangaReaderHtmlSelectorPageIndex *selector.Chain
 	serviceMangaReaderHtmlSelectorImage     *selector.Chain
 )
 
@@ -37,6 +39,8 @@ func init() {
 	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#listing a")
 
 	serviceMangaReaderHtmlSelectorPages, _ = selector.Selector("#pageMenu option")
+
+	serviceMangaReaderHtmlSelectorPageIndex, _ = selector.Selector("select#pageMenu option[selected=selected]")
 
 	serviceMangaReaderHtmlSelectorImage, _ = selector.Selector("#img")
 }
@@ -129,6 +133,31 @@ func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
 	}
 
 	return pages, nil
+}
+
+func (service *MangaReaderService) PageIndex(page *Page) (uint, error) {
+	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	if err != nil {
+		return 0, err
+	}
+
+	indexNodes := serviceMangaReaderHtmlSelectorPageIndex.Find(rootNode)
+	if len(indexNodes) < 1 {
+		return 0, errors.New("Index node not found")
+	}
+	indexNode := indexNodes[0]
+	if indexNode.FirstChild == nil {
+		return 0, errors.New("Index text node not found")
+	}
+	indexTextNode := indexNode.FirstChild
+	indexString := indexTextNode.Data
+	indexInt, err := strconv.Atoi(indexString)
+	if err != nil {
+		return 0, err
+	}
+	index := uint(indexInt)
+
+	return index, err
 }
 
 func (service *MangaReaderService) Image(page *Page) (*Image, error) {
