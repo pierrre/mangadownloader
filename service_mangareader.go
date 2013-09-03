@@ -15,10 +15,11 @@ var (
 	serviceMangaReaderUrlBase   *url.URL
 	serviceMangaReaderUrlMangas *url.URL
 
-	serviceMangaReaderHtmlSelectorMangas   *selector.Chain
-	serviceMangaReaderHtmlSelectorChapters *selector.Chain
-	serviceMangaReaderHtmlSelectorPages    *selector.Chain
-	serviceMangaReaderHtmlSelectorImage    *selector.Chain
+	serviceMangaReaderHtmlSelectorMangas    *selector.Chain
+	serviceMangaReaderHtmlSelectorMangaName *selector.Chain
+	serviceMangaReaderHtmlSelectorChapters  *selector.Chain
+	serviceMangaReaderHtmlSelectorPages     *selector.Chain
+	serviceMangaReaderHtmlSelectorImage     *selector.Chain
 )
 
 func init() {
@@ -30,6 +31,8 @@ func init() {
 	serviceMangaReaderUrlMangas.Path = serviceMangaReaderPathMangas
 
 	serviceMangaReaderHtmlSelectorMangas, _ = selector.Selector("ul.series_alpha a")
+
+	serviceMangaReaderHtmlSelectorMangaName, _ = selector.Selector("h2.aname")
 
 	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#listing a")
 
@@ -62,6 +65,26 @@ func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 	}
 
 	return mangas, nil
+}
+
+func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return "", err
+	}
+
+	nameNodes := serviceMangaReaderHtmlSelectorMangaName.Find(rootNode)
+	if len(nameNodes) < 1 {
+		return "", errors.New("Name node not found")
+	}
+	nameNode := nameNodes[0]
+	if nameNode.FirstChild == nil {
+		return "", errors.New("Name text node not found")
+	}
+	nameTextNode := nameNode.FirstChild
+	name := nameTextNode.Data
+
+	return name, nil
 }
 
 func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {

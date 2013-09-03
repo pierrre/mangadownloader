@@ -14,6 +14,11 @@ func main() {
 		}
 		for _, manga := range mangas {
 			fmt.Println(manga)
+			mangaName, err := manga.Name()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(mangaName)
 			chapters, err := manga.Chapters()
 			if err != nil {
 				panic(err)
