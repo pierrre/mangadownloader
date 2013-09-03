@@ -14,5 +14,5 @@ func (manga *Manga) Name() (string, error) {
 }
 
 func (manga *Manga) Chapters() ([]*Chapter, error) {
-	return manga.Service.Chapters(manga)
+	return manga.Service.MangaChapters(manga)
 }

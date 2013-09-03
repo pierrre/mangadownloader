@@ -10,5 +10,5 @@ type Chapter struct {
 }
 
 func (chapter *Chapter) Pages() ([]*Page, error) {
-	return chapter.Service.Pages(chapter)
+	return chapter.Service.ChapterPages(chapter)
 }

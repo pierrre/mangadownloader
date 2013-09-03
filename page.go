@@ -14,5 +14,5 @@ func (page *Page) Index() (uint, error) {
 }
 
 func (page *Page) Image() (*Image, error) {
-	return page.Service.Image(page)
+	return page.Service.PageImage(page)
 }

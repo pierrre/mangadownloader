@@ -91,7 +91,7 @@ func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
 	return name, nil
 }
 
-func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
+func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, error) {
 	rootNode, err := service.Md.HttpGetHtml(manga.Url)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (service *MangaReaderService) Chapters(manga *Manga) ([]*Chapter, error) {
 	return chapters, nil
 }
 
-func (service *MangaReaderService) Pages(chapter *Chapter) ([]*Page, error) {
+func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, error) {
 	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
 	if err != nil {
 		return nil, err
@@ -160,7 +160,7 @@ func (service *MangaReaderService) PageIndex(page *Page) (uint, error) {
 	return index, err
 }
 
-func (service *MangaReaderService) Image(page *Page) (*Image, error) {
+func (service *MangaReaderService) PageImage(page *Page) (*Image, error) {
 	rootNode, err := service.Md.HttpGetHtml(page.Url)
 	if err != nil {
 		return nil, err
