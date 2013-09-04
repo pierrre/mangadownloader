@@ -2,6 +2,7 @@ package mangadownloader
 
 import (
 	"code.google.com/p/go.net/html"
+	"errors"
 	"net/http"
 	"net/url"
 )
@@ -18,6 +19,16 @@ func CreateDefaultMangeDownloader() *MangaDownloader {
 	})
 
 	return md
+}
+
+func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
+	for _, service := range md.Services {
+		if service.Supports(u) {
+			return service.Identify(u)
+		}
+	}
+
+	return nil, errors.New("Unsupported url")
 }
 
 func (md *MangaDownloader) HttpGet(u *url.URL) (*http.Response, error) {

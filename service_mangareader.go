@@ -16,12 +16,14 @@ var (
 	serviceMangaReaderUrlBase   *url.URL
 	serviceMangaReaderUrlMangas *url.URL
 
-	serviceMangaReaderHtmlSelectorMangas        *selector.Chain
-	serviceMangaReaderHtmlSelectorMangaName     *selector.Chain
-	serviceMangaReaderHtmlSelectorMangaChapters *selector.Chain
-	serviceMangaReaderHtmlSelectorChapterPages  *selector.Chain
-	serviceMangaReaderHtmlSelectorPageIndex     *selector.Chain
-	serviceMangaReaderHtmlSelectorPageImage     *selector.Chain
+	serviceMangaReaderHtmlSelectorMangas          *selector.Chain
+	serviceMangaReaderHtmlSelectorMangaName       *selector.Chain
+	serviceMangaReaderHtmlSelectorMangaChapters   *selector.Chain
+	serviceMangaReaderHtmlSelectorChapterPages    *selector.Chain
+	serviceMangaReaderHtmlSelectorPageIndex       *selector.Chain
+	serviceMangaReaderHtmlSelectorPageImage       *selector.Chain
+	serviceMangaReaderHtmlSelectorIdentifyManga   *selector.Chain
+	serviceMangaReaderHtmlSelectorIdentifyChapter *selector.Chain
 )
 
 func init() {
@@ -43,6 +45,10 @@ func init() {
 	serviceMangaReaderHtmlSelectorPageIndex, _ = selector.Selector("select#pageMenu option[selected=selected]")
 
 	serviceMangaReaderHtmlSelectorPageImage, _ = selector.Selector("#img")
+
+	serviceMangaReaderHtmlSelectorIdentifyManga, _ = selector.Selector("#chapterlist")
+
+	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
 }
 
 type MangaReaderService struct {
@@ -78,7 +84,7 @@ func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
 	}
 
 	nameNodes := serviceMangaReaderHtmlSelectorMangaName.Find(rootNode)
-	if len(nameNodes) < 1 {
+	if len(nameNodes) != 1 {
 		return "", errors.New("Name node not found")
 	}
 	nameNode := nameNodes[0]
@@ -142,7 +148,7 @@ func (service *MangaReaderService) PageIndex(page *Page) (uint, error) {
 	}
 
 	indexNodes := serviceMangaReaderHtmlSelectorPageIndex.Find(rootNode)
-	if len(indexNodes) < 1 {
+	if len(indexNodes) != 1 {
 		return 0, errors.New("Index node not found")
 	}
 	indexNode := indexNodes[0]
@@ -182,6 +188,41 @@ func (service *MangaReaderService) PageImage(page *Page) (*Image, error) {
 	}
 
 	return image, nil
+}
+
+func (service *MangaReaderService) Supports(u *url.URL) bool {
+	return u.Host == serviceMangaReaderDomain
+}
+
+func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
+	if !service.Supports(u) {
+		return nil, errors.New("Not supported")
+	}
+
+	rootNode, err := service.Md.HttpGetHtml(u)
+	if err != nil {
+		return nil, err
+	}
+
+	identifyMangaNodes := serviceMangaReaderHtmlSelectorIdentifyManga.Find(rootNode)
+	if len(identifyMangaNodes) == 1 {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
+	}
+
+	identifyChapterNodes := serviceMangaReaderHtmlSelectorIdentifyChapter.Find(rootNode)
+	if len(identifyChapterNodes) == 1 {
+		chapter := &Chapter{
+			Url:     u,
+			Service: service,
+		}
+		return chapter, nil
+	}
+
+	return nil, errors.New("Unknown url")
 }
 
 func (service *MangaReaderService) String() string {

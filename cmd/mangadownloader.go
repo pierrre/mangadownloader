@@ -3,10 +3,24 @@ package main
 import (
 	"fmt"
 	"github.com/pierrre/mangadownloader"
+	"net/url"
+	"reflect"
 )
 
 func main() {
 	md := mangadownloader.CreateDefaultMangeDownloader()
+
+	u, err := url.Parse("http://www.mangareader.net/855-36418-1/c-sword-and-cornett/chapter-1.html")
+	if err != nil {
+		panic(err)
+	}
+	object, err := md.Identify(u)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(reflect.TypeOf(object))
+	fmt.Println(object)
+
 	for _, service := range md.Services {
 		mangas, err := service.Mangas()
 		if err != nil {
