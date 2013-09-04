@@ -28,7 +28,7 @@ var (
 	serviceMangaReaderHtmlSelectorIdentifyManga   *selector.Chain
 	serviceMangaReaderHtmlSelectorIdentifyChapter *selector.Chain
 
-	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
+	serviceMangaReaderRegexpChapterName *regexp.Regexp
 )
 
 func init() {
@@ -56,6 +56,8 @@ func init() {
 	serviceMangaReaderHtmlSelectorIdentifyManga, _ = selector.Selector("#chapterlist")
 
 	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
+
+	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
 }
 
 type MangaReaderService struct {
