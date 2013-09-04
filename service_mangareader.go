@@ -16,12 +16,12 @@ var (
 	serviceMangaReaderUrlBase   *url.URL
 	serviceMangaReaderUrlMangas *url.URL
 
-	serviceMangaReaderHtmlSelectorMangas    *selector.Chain
-	serviceMangaReaderHtmlSelectorMangaName *selector.Chain
-	serviceMangaReaderHtmlSelectorChapters  *selector.Chain
-	serviceMangaReaderHtmlSelectorPages     *selector.Chain
-	serviceMangaReaderHtmlSelectorPageIndex *selector.Chain
-	serviceMangaReaderHtmlSelectorImage     *selector.Chain
+	serviceMangaReaderHtmlSelectorMangas        *selector.Chain
+	serviceMangaReaderHtmlSelectorMangaName     *selector.Chain
+	serviceMangaReaderHtmlSelectorMangaChapters *selector.Chain
+	serviceMangaReaderHtmlSelectorChapterPages  *selector.Chain
+	serviceMangaReaderHtmlSelectorPageIndex     *selector.Chain
+	serviceMangaReaderHtmlSelectorPageImage     *selector.Chain
 )
 
 func init() {
@@ -36,13 +36,13 @@ func init() {
 
 	serviceMangaReaderHtmlSelectorMangaName, _ = selector.Selector("h2.aname")
 
-	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#chapterlist a")
+	serviceMangaReaderHtmlSelectorMangaChapters, _ = selector.Selector("#chapterlist a")
 
-	serviceMangaReaderHtmlSelectorPages, _ = selector.Selector("#pageMenu option")
+	serviceMangaReaderHtmlSelectorChapterPages, _ = selector.Selector("#pageMenu option")
 
 	serviceMangaReaderHtmlSelectorPageIndex, _ = selector.Selector("select#pageMenu option[selected=selected]")
 
-	serviceMangaReaderHtmlSelectorImage, _ = selector.Selector("#img")
+	serviceMangaReaderHtmlSelectorPageImage, _ = selector.Selector("#img")
 }
 
 type MangaReaderService struct {
@@ -97,7 +97,7 @@ func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, erro
 		return nil, err
 	}
 
-	linkNodes := serviceMangaReaderHtmlSelectorChapters.Find(rootNode)
+	linkNodes := serviceMangaReaderHtmlSelectorMangaChapters.Find(rootNode)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
@@ -119,7 +119,7 @@ func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, erro
 		return nil, err
 	}
 
-	optionNodes := serviceMangaReaderHtmlSelectorPages.Find(rootNode)
+	optionNodes := serviceMangaReaderHtmlSelectorChapterPages.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
@@ -166,7 +166,7 @@ func (service *MangaReaderService) PageImage(page *Page) (*Image, error) {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaReaderHtmlSelectorImage.Find(rootNode)
+	imgNodes := serviceMangaReaderHtmlSelectorPageImage.Find(rootNode)
 	if len(imgNodes) < 1 {
 		return nil, errors.New("Image node not found")
 	}
