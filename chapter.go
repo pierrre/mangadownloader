@@ -9,6 +9,10 @@ type Chapter struct {
 	Service Service
 }
 
+func (chapter *Chapter) Name() (string, error) {
+	return chapter.Service.ChapterName(chapter)
+}
+
 func (chapter *Chapter) Pages() ([]*Page, error) {
 	return chapter.Service.ChapterPages(chapter)
 }

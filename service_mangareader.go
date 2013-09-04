@@ -3,7 +3,9 @@ package mangadownloader
 import (
 	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
+	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 )
 
@@ -19,11 +21,14 @@ var (
 	serviceMangaReaderHtmlSelectorMangas          *selector.Chain
 	serviceMangaReaderHtmlSelectorMangaName       *selector.Chain
 	serviceMangaReaderHtmlSelectorMangaChapters   *selector.Chain
+	serviceMangaReaderHtmlSelectorChapterName     *selector.Chain
 	serviceMangaReaderHtmlSelectorChapterPages    *selector.Chain
 	serviceMangaReaderHtmlSelectorPageIndex       *selector.Chain
 	serviceMangaReaderHtmlSelectorPageImage       *selector.Chain
 	serviceMangaReaderHtmlSelectorIdentifyManga   *selector.Chain
 	serviceMangaReaderHtmlSelectorIdentifyChapter *selector.Chain
+
+	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
 )
 
 func init() {
@@ -39,6 +44,8 @@ func init() {
 	serviceMangaReaderHtmlSelectorMangaName, _ = selector.Selector("h2.aname")
 
 	serviceMangaReaderHtmlSelectorMangaChapters, _ = selector.Selector("#chapterlist a")
+
+	serviceMangaReaderHtmlSelectorChapterName, _ = selector.Selector("#mangainfo h1")
 
 	serviceMangaReaderHtmlSelectorChapterPages, _ = selector.Selector("#pageMenu option")
 
@@ -117,6 +124,36 @@ func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, erro
 	}
 
 	return chapters, nil
+}
+
+func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error) {
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	if err != nil {
+		return "", err
+	}
+
+	nameNodes := serviceMangaReaderHtmlSelectorChapterName.Find(rootNode)
+	if len(nameNodes) != 1 {
+		return "", errors.New("Name node not found")
+	}
+	nameNode := nameNodes[0]
+	if nameNode.FirstChild == nil {
+		return "", errors.New("Name text node not found")
+	}
+	nameTextNode := nameNode.FirstChild
+	name := nameTextNode.Data
+	matches := serviceMangaReaderRegexpChapterName.FindStringSubmatch(name)
+	if matches == nil || len(matches) != 2 {
+		return "", errors.New("Invalid name format")
+	}
+	name = matches[1]
+	nameInt, err := strconv.Atoi(name)
+	if err != nil {
+		return "", err
+	}
+	name = fmt.Sprintf("%04d", nameInt)
+
+	return name, nil
 }
 
 func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, error) {

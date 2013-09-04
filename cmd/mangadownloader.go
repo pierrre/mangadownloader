@@ -39,6 +39,11 @@ func main() {
 			}
 			for _, chapter := range chapters {
 				fmt.Println("	" + fmt.Sprint(chapter))
+				chapterName, err := chapter.Name()
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("	" + chapterName)
 				pages, err := chapter.Pages()
 				if err != nil {
 					panic(err)
