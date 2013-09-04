@@ -36,7 +36,7 @@ func init() {
 
 	serviceMangaReaderHtmlSelectorMangaName, _ = selector.Selector("h2.aname")
 
-	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#listing a")
+	serviceMangaReaderHtmlSelectorChapters, _ = selector.Selector("#chapterlist a")
 
 	serviceMangaReaderHtmlSelectorPages, _ = selector.Selector("#pageMenu option")
 
