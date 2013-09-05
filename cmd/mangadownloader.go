@@ -6,14 +6,20 @@ import (
 	"github.com/pierrre/mangadownloader"
 	"net/url"
 	"os"
+	"path/filepath"
 )
 
 func main() {
+	outFlag := flag.String("out", "", "Output directory")
 	flag.Parse()
 
-	out, err := os.Getwd()
-	if err != nil {
-		panic(err)
+	out := *outFlag
+	if !filepath.IsAbs(out) {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		out = filepath.Join(currentDir, out)
 	}
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
