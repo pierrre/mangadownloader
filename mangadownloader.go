@@ -14,12 +14,9 @@ import (
 )
 
 var (
-	regexpImageContentType *regexp.Regexp
+	regexpImageContentType, _  = regexp.Compile("^image/(.+)$")
+	filenameReservedCharacters = []rune{'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
 )
-
-func init() {
-	regexpImageContentType, _ = regexp.Compile("^image/(.+)$")
-}
 
 type MangaDownloader struct {
 	Services []Service
@@ -136,8 +133,6 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 }
 
 func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
-	fmt.Println(page.Url)
-
 	index, err := page.Index()
 	if err != nil {
 		return err
