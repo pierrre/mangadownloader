@@ -18,17 +18,17 @@ var (
 	serviceMangaReaderUrlBase   *url.URL
 	serviceMangaReaderUrlMangas *url.URL
 
-	serviceMangaReaderHtmlSelectorMangas          *selector.Chain
-	serviceMangaReaderHtmlSelectorMangaName       *selector.Chain
-	serviceMangaReaderHtmlSelectorMangaChapters   *selector.Chain
-	serviceMangaReaderHtmlSelectorChapterName     *selector.Chain
-	serviceMangaReaderHtmlSelectorChapterPages    *selector.Chain
-	serviceMangaReaderHtmlSelectorPageIndex       *selector.Chain
-	serviceMangaReaderHtmlSelectorPageImage       *selector.Chain
-	serviceMangaReaderHtmlSelectorIdentifyManga   *selector.Chain
-	serviceMangaReaderHtmlSelectorIdentifyChapter *selector.Chain
+	serviceMangaReaderHtmlSelectorMangas, _          = selector.Selector("ul.series_alpha a")
+	serviceMangaReaderHtmlSelectorMangaName, _       = selector.Selector("h2.aname")
+	serviceMangaReaderHtmlSelectorMangaChapters, _   = selector.Selector("#chapterlist a")
+	serviceMangaReaderHtmlSelectorChapterName, _     = selector.Selector("#mangainfo h1")
+	serviceMangaReaderHtmlSelectorChapterPages, _    = selector.Selector("#pageMenu option")
+	serviceMangaReaderHtmlSelectorPageIndex, _       = selector.Selector("select#pageMenu option[selected=selected]")
+	serviceMangaReaderHtmlSelectorPageImage, _       = selector.Selector("#img")
+	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
+	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
 
-	serviceMangaReaderRegexpChapterName *regexp.Regexp
+	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
 )
 
 func init() {
@@ -38,26 +38,6 @@ func init() {
 
 	serviceMangaReaderUrlMangas = urlCopy(serviceMangaReaderUrlBase)
 	serviceMangaReaderUrlMangas.Path = serviceMangaReaderPathMangas
-
-	serviceMangaReaderHtmlSelectorMangas, _ = selector.Selector("ul.series_alpha a")
-
-	serviceMangaReaderHtmlSelectorMangaName, _ = selector.Selector("h2.aname")
-
-	serviceMangaReaderHtmlSelectorMangaChapters, _ = selector.Selector("#chapterlist a")
-
-	serviceMangaReaderHtmlSelectorChapterName, _ = selector.Selector("#mangainfo h1")
-
-	serviceMangaReaderHtmlSelectorChapterPages, _ = selector.Selector("#pageMenu option")
-
-	serviceMangaReaderHtmlSelectorPageIndex, _ = selector.Selector("select#pageMenu option[selected=selected]")
-
-	serviceMangaReaderHtmlSelectorPageImage, _ = selector.Selector("#img")
-
-	serviceMangaReaderHtmlSelectorIdentifyManga, _ = selector.Selector("#chapterlist")
-
-	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
-
-	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
 }
 
 type MangaReaderService struct {
