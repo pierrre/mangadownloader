@@ -144,6 +144,9 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 		return err
 	}
 	response, err := md.HttpGet(image.Url)
+	if err != nil {
+		return err
+	}
 	defer response.Body.Close()
 	var extension string
 	if len(extension) == 0 {
