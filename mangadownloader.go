@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sync"
 )
 
 var (
@@ -74,10 +75,35 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	if err != nil {
 		return err
 	}
-	for _, page := range pages {
-		err := md.DownloadPage(page, out)
+
+	work := make(chan *Page)
+	go func() {
+		for _, page := range pages {
+			work <- page
+		}
+		close(work)
+	}()
+
+	concurrent := 8
+	wg := new(sync.WaitGroup)
+	wg.Add(concurrent)
+	result := make(chan error)
+	for i := 0; i < concurrent; i++ {
+		go func() {
+			for page := range work {
+				result <- md.DownloadPage(page, out)
+			}
+			wg.Done()
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	for err := range result {
 		if err != nil {
-			return err
+			fmt.Println(err)
 		}
 	}
 
@@ -85,6 +111,8 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 }
 
 func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
+	fmt.Println(page.Url)
+
 	index, err := page.Index()
 	if err != nil {
 		return err
