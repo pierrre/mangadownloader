@@ -55,10 +55,35 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 	if err != nil {
 		return err
 	}
-	for _, chapter := range chapters {
-		err := md.DownloadChapter(chapter, out)
+
+	work := make(chan *Chapter)
+	go func() {
+		for _, chapter := range chapters {
+			work <- chapter
+		}
+		close(work)
+	}()
+
+	concurrent := 2
+	wg := new(sync.WaitGroup)
+	wg.Add(concurrent)
+	result := make(chan error)
+	for i := 0; i < concurrent; i++ {
+		go func() {
+			for chapter := range work {
+				result <- md.DownloadChapter(chapter, out)
+			}
+			wg.Done()
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	for err := range result {
 		if err != nil {
-			return err
+			fmt.Println(err)
 		}
 	}
 
