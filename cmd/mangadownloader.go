@@ -5,8 +5,6 @@ import (
 	"flag"
 	"github.com/pierrre/mangadownloader"
 	"net/url"
-	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -14,13 +12,6 @@ func main() {
 	flag.Parse()
 
 	out := *outFlag
-	if !filepath.IsAbs(out) {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-		out = filepath.Join(currentDir, out)
-	}
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
 
