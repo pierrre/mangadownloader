@@ -95,14 +95,7 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 	if err != nil {
 		return err
 	}
-	var response *http.Response
-	for {
-		response, err = md.HttpGet(image.Url)
-		if err == nil {
-			break
-		}
-		fmt.Println(err)
-	}
+	response, err := md.HttpGet(image.Url)
 	defer response.Body.Close()
 	var extension string
 	if len(extension) == 0 {
@@ -137,8 +130,15 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 	return nil
 }
 
-func (md *MangaDownloader) HttpGet(u *url.URL) (*http.Response, error) {
-	return http.Get(u.String())
+func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
+	for i := 0; i < 5; i++ {
+		response, err = http.Get(u.String())
+		if err == nil {
+			break
+		}
+		fmt.Println(err)
+	}
+	return
 }
 
 func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
