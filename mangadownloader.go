@@ -98,7 +98,16 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		return err
 	}
 	out = filepath.Join(out, name)
+	if fileExists(out) {
+		return nil
+	}
 	outTmp := out + ".tmp"
+	if fileExists(outTmp) {
+		err = os.RemoveAll(outTmp)
+		if err != nil {
+			return err
+		}
+	}
 
 	pages, err := chapter.Pages()
 	if err != nil {
