@@ -94,6 +94,8 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		return err
 	}
 	out = filepath.Join(out, name)
+	outTmp := out + ".tmp"
+
 	pages, err := chapter.Pages()
 	if err != nil {
 		return err
@@ -114,7 +116,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	for i := 0; i < concurrent; i++ {
 		go func() {
 			for page := range work {
-				result <- md.DownloadPage(page, out)
+				result <- md.DownloadPage(page, outTmp)
 			}
 			wg.Done()
 		}()
@@ -129,6 +131,11 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		if err != nil {
 			fmt.Println(err)
 		}
+	}
+
+	err = os.Rename(outTmp, out)
+	if err != nil {
+		return err
 	}
 
 	return nil
