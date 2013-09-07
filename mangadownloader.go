@@ -4,7 +4,7 @@ import (
 	"code.google.com/p/go.net/html"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -78,6 +78,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 		close(result)
 	}()
 
+	// TODO errors
 	for err := range result {
 		if err != nil {
 			fmt.Println(err)
@@ -123,6 +124,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		close(result)
 	}()
 
+	//TODO errors
 	for err := range result {
 		if err != nil {
 			fmt.Println(err)
@@ -143,11 +145,17 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 	if err != nil {
 		return err
 	}
+
 	response, err := md.HttpGet(image.Url)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
 	var extension string
 	if len(extension) == 0 {
 		contentType := response.Header.Get("content-type")
@@ -164,16 +172,12 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 		}
 		out += "." + extension
 	}
+
 	err = os.MkdirAll(filepath.Dir(out), 0755)
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(out, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = io.Copy(file, response.Body)
+	err = ioutil.WriteFile(out, data, 0644)
 	if err != nil {
 		return err
 	}
@@ -182,6 +186,7 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 }
 
 func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
+	// TODO improve
 	for i := 0; i < 5; i++ {
 		response, err = http.Get(u.String())
 		if err == nil {
