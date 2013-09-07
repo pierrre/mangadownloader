@@ -65,7 +65,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 		close(work)
 	}()
 
-	concurrent := 2
+	concurrent := 4
 	wg := new(sync.WaitGroup)
 	wg.Add(concurrent)
 	result := make(chan error)
@@ -82,11 +82,14 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 		close(result)
 	}()
 
-	// TODO errors
+	errs := make(MultiError, 0)
 	for err := range result {
 		if err != nil {
-			fmt.Println(err)
+			errs = append(errs, err)
 		}
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 
 	return nil
@@ -139,11 +142,14 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		close(result)
 	}()
 
-	//TODO errors
+	errs := make(MultiError, 0)
 	for err := range result {
 		if err != nil {
-			fmt.Println(err)
+			errs = append(errs, err)
 		}
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 
 	err = os.Rename(outTmp, out)
@@ -209,18 +215,20 @@ func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err err
 	return md.httpGetRetry(u, httpRetry)
 }
 
-func (md *MangaDownloader) httpGetRetry(u *url.URL, retry int) (response *http.Response, err error) {
+func (md *MangaDownloader) httpGetRetry(u *url.URL, retry int) (*http.Response, error) {
 	if retry < 1 {
 		return nil, errors.New("Invalid retry")
 	}
 
+	errs := make(MultiError, 0)
 	for i := 0; i < retry; i++ {
-		response, err = http.Get(u.String())
+		response, err := http.Get(u.String())
 		if err == nil {
-			break
+			return response, nil
 		}
+		errs = append(errs, err)
 	}
-	return
+	return nil, errs
 }
 
 func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
