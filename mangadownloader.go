@@ -13,6 +13,10 @@ import (
 	"sync"
 )
 
+const (
+	httpRetry = 5
+)
+
 var (
 	regexpImageContentType, _  = regexp.Compile("^image/(.+)$")
 	filenameReservedCharacters = []rune{'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
@@ -193,13 +197,19 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 }
 
 func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
-	// TODO improve
-	for i := 0; i < 5; i++ {
+	return md.httpGetRetry(u, httpRetry)
+}
+
+func (md *MangaDownloader) httpGetRetry(u *url.URL, retry int) (response *http.Response, err error) {
+	if retry < 1 {
+		return nil, errors.New("Invalid retry")
+	}
+
+	for i := 0; i < retry; i++ {
 		response, err = http.Get(u.String())
 		if err == nil {
 			break
 		}
-		fmt.Println(err)
 	}
 	return
 }
