@@ -14,10 +14,6 @@ import (
 	"sync"
 )
 
-const (
-	httpRetry = 5
-)
-
 var (
 	regexpImageContentType, _ = regexp.Compile("^image/(.+)$")
 	filenameCleanReplacer     *strings.Replacer
@@ -33,7 +29,10 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services []Service
+	Services           []Service
+	HttpRetry          int
+	ConcurrencyChapter int
+	ConcurrencyPage    int
 }
 
 func CreateDefaultMangeDownloader() *MangaDownloader {
@@ -75,11 +74,14 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 		close(work)
 	}()
 
-	concurrent := 4
+	concurrencyChapter := md.ConcurrencyChapter
+	if concurrencyChapter < 1 {
+		concurrencyChapter = 1
+	}
 	wg := new(sync.WaitGroup)
-	wg.Add(concurrent)
+	wg.Add(concurrencyChapter)
 	result := make(chan error)
-	for i := 0; i < concurrent; i++ {
+	for i := 0; i < concurrencyChapter; i++ {
 		go func() {
 			for chapter := range work {
 				result <- md.DownloadChapter(chapter, out)
@@ -135,11 +137,14 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		close(work)
 	}()
 
-	concurrent := 8
+	concurrencyPage := md.ConcurrencyPage
+	if concurrencyPage < 1 {
+		concurrencyPage = 1
+	}
 	wg := new(sync.WaitGroup)
-	wg.Add(concurrent)
+	wg.Add(concurrencyPage)
 	result := make(chan error)
-	for i := 0; i < concurrent; i++ {
+	for i := 0; i < concurrencyPage; i++ {
 		go func() {
 			for page := range work {
 				result <- md.DownloadPage(page, outTmp)
@@ -222,16 +227,13 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
 }
 
 func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
-	return md.httpGetRetry(u, httpRetry)
-}
-
-func (md *MangaDownloader) httpGetRetry(u *url.URL, retry int) (*http.Response, error) {
-	if retry < 1 {
-		return nil, errors.New("Invalid retry")
+	httpRetry := md.HttpRetry
+	if httpRetry < 1 {
+		httpRetry = 1
 	}
 
 	errs := make(MultiError, 0)
-	for i := 0; i < retry; i++ {
+	for i := 0; i < httpRetry; i++ {
 		response, err := http.Get(u.String())
 		if err == nil {
 			return response, nil

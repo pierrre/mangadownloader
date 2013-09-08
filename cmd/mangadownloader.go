@@ -9,11 +9,19 @@ import (
 
 func main() {
 	outFlag := flag.String("out", "", "Output directory")
+	httpRetryFlag := flag.Int("httpretry", 5, "Http retry")
+	concurrencyChapterFlag := flag.Int("concurrencychapter", 4, "Concurrency chapter")
+	concurrencyPageFlag := flag.Int("concurrencypage", 8, "Concurrency page")
 	flag.Parse()
-
 	out := *outFlag
+	httpRetry := *httpRetryFlag
+	concurrencyChapter := *concurrencyChapterFlag
+	concurrencyPage := *concurrencyPageFlag
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
+	md.HttpRetry = httpRetry
+	md.ConcurrencyChapter = concurrencyChapter
+	md.ConcurrencyPage = concurrencyPage
 
 	for _, arg := range flag.Args() {
 		u, err := url.Parse(arg)
