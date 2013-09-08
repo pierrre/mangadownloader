@@ -10,14 +10,25 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 )
 
+const (
+	pageDigitCount = 4
+)
+
 var (
+	pageFilenameFormat        = "%0" + strconv.Itoa(pageDigitCount) + "d"
 	regexpImageContentType, _ = regexp.Compile("^image/(.+)$")
 	filenameCleanReplacer     *strings.Replacer
 )
+
+type chapterPageWork struct {
+	page  *Page
+	index uint
+}
 
 func init() {
 	filenameCleanReplacements := make([]string, len(filenameReservedCharacters)*2)
@@ -129,10 +140,13 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		return err
 	}
 
-	work := make(chan *Page)
+	work := make(chan *chapterPageWork)
 	go func() {
-		for _, page := range pages {
-			work <- page
+		for index, page := range pages {
+			work <- &chapterPageWork{
+				page:  page,
+				index: uint(index),
+			}
 		}
 		close(work)
 	}()
@@ -146,8 +160,8 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	result := make(chan error)
 	for i := 0; i < concurrencyPage; i++ {
 		go func() {
-			for page := range work {
-				result <- md.DownloadPage(page, outTmp)
+			for chapterPageWork := range work {
+				result <- md.downloadPageWithIndex(chapterPageWork.page, outTmp, chapterPageWork.index)
 			}
 			wg.Done()
 		}()
@@ -175,12 +189,13 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	return nil
 }
 
-func (md *MangaDownloader) DownloadPage(page *Page, out string) error {
-	index, err := page.Index()
-	if err != nil {
-		return err
-	}
-	out = filepath.Join(out, fmt.Sprintf("%04d", index))
+func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index uint) error {
+	filename := fmt.Sprintf(pageFilenameFormat, index+1)
+	return md.DownloadPage(page, out, filename)
+}
+
+func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string) error {
+	out = filepath.Join(out, filename)
 
 	image, err := page.Image()
 	if err != nil {

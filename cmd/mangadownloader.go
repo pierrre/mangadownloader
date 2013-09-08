@@ -44,7 +44,7 @@ func main() {
 				panic(err)
 			}
 		case *mangadownloader.Page:
-			err := md.DownloadPage(object, out)
+			err := md.DownloadPage(object, out, "image")
 			if err != nil {
 				panic(err)
 			}

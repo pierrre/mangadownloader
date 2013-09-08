@@ -10,7 +10,6 @@ type Service interface {
 	MangaChapters(*Manga) ([]*Chapter, error)
 	ChapterName(*Chapter) (string, error)
 	ChapterPages(*Chapter) ([]*Page, error)
-	PageIndex(*Page) (uint, error)
 	PageImage(*Page) (*Image, error)
 	Supports(*url.URL) bool
 	Identify(*url.URL) (interface{}, error)

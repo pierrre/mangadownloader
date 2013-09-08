@@ -9,10 +9,6 @@ type Page struct {
 	Service Service
 }
 
-func (page *Page) Index() (uint, error) {
-	return page.Service.PageIndex(page)
-}
-
 func (page *Page) Image() (*Image, error) {
 	return page.Service.PageImage(page)
 }
