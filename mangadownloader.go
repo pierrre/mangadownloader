@@ -15,12 +15,7 @@ import (
 	"sync"
 )
 
-const (
-	pageDigitCount = 4
-)
-
 var (
-	pageFilenameFormat        = "%0" + strconv.Itoa(pageDigitCount) + "d"
 	regexpImageContentType, _ = regexp.Compile("^image/(.+)$")
 	filenameCleanReplacer     *strings.Replacer
 )
@@ -41,6 +36,7 @@ func init() {
 
 type MangaDownloader struct {
 	Services           []Service
+	PageDigitCount     int
 	HttpRetry          int
 	ConcurrencyChapter int
 	ConcurrencyPage    int
@@ -190,7 +186,8 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 }
 
 func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index uint) error {
-	filename := fmt.Sprintf(pageFilenameFormat, index+1)
+	filenameFormat := "%0" + strconv.Itoa(md.PageDigitCount) + "d"
+	filename := fmt.Sprintf(filenameFormat, index+1)
 	return md.DownloadPage(page, out, filename)
 }
 

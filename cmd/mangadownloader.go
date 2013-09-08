@@ -9,16 +9,19 @@ import (
 
 func main() {
 	outFlag := flag.String("out", "", "Output directory")
+	pageDigitCountFlag := flag.Int("pagedigitcount", 4, "Page digit count")
 	httpRetryFlag := flag.Int("httpretry", 5, "Http retry")
 	concurrencyChapterFlag := flag.Int("concurrencychapter", 4, "Concurrency chapter")
 	concurrencyPageFlag := flag.Int("concurrencypage", 8, "Concurrency page")
 	flag.Parse()
 	out := *outFlag
+	pageDigitCount := *pageDigitCountFlag
 	httpRetry := *httpRetryFlag
 	concurrencyChapter := *concurrencyChapterFlag
 	concurrencyPage := *concurrencyPageFlag
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
+	md.PageDigitCount = pageDigitCount
 	md.HttpRetry = httpRetry
 	md.ConcurrencyChapter = concurrencyChapter
 	md.ConcurrencyPage = concurrencyPage
