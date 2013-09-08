@@ -159,7 +159,7 @@ func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, erro
 	return pages, nil
 }
 
-func (service *MangaReaderService) PageImage(page *Page) (*Image, error) {
+func (service *MangaReaderService) PageImageUrl(page *Page) (*url.URL, error) {
 	rootNode, err := service.Md.HttpGetHtml(page.Url)
 	if err != nil {
 		return nil, err
@@ -175,12 +175,8 @@ func (service *MangaReaderService) PageImage(page *Page) (*Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	image := &Image{
-		Url:     imageUrl,
-		Service: service,
-	}
 
-	return image, nil
+	return imageUrl, nil
 }
 
 func (service *MangaReaderService) Supports(u *url.URL) bool {

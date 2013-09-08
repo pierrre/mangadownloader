@@ -9,6 +9,6 @@ type Page struct {
 	Service Service
 }
 
-func (page *Page) Image() (*Image, error) {
-	return page.Service.PageImage(page)
+func (page *Page) ImageUrl() (*url.URL, error) {
+	return page.Service.PageImageUrl(page)
 }

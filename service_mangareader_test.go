@@ -118,7 +118,7 @@ func TestChapter(t *testing.T) {
 	}
 
 	page := pages[0]
-	_, err = page.Image()
+	_, err = page.ImageUrl()
 	if err != nil {
 		t.Fatal(err)
 	}

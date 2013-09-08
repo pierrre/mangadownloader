@@ -194,12 +194,12 @@ func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index u
 func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string) error {
 	out = filepath.Join(out, filename)
 
-	image, err := page.Image()
+	imageUrl, err := page.ImageUrl()
 	if err != nil {
 		return err
 	}
 
-	response, err := md.HttpGet(image.Url)
+	response, err := md.HttpGet(imageUrl)
 	if err != nil {
 		return err
 	}
