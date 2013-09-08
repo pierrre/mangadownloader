@@ -38,6 +38,16 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+		case *mangadownloader.Chapter:
+			err := md.DownloadChapter(object, out)
+			if err != nil {
+				panic(err)
+			}
+		case *mangadownloader.Page:
+			err := md.DownloadPage(object, out)
+			if err != nil {
+				panic(err)
+			}
 		default:
 			panic(errors.New("Not supported"))
 		}
