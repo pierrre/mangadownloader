@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -18,9 +19,18 @@ const (
 )
 
 var (
-	regexpImageContentType, _  = regexp.Compile("^image/(.+)$")
-	filenameReservedCharacters = []rune{'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
+	regexpImageContentType, _ = regexp.Compile("^image/(.+)$")
+	filenameCleanReplacer     *strings.Replacer
 )
+
+func init() {
+	filenameCleanReplacements := make([]string, len(filenameReservedCharacters)*2)
+	for _, char := range filenameReservedCharacters {
+		filenameCleanReplacements = append(filenameCleanReplacements, string(char))
+		filenameCleanReplacements = append(filenameCleanReplacements, " ")
+	}
+	filenameCleanReplacer = strings.NewReplacer(filenameCleanReplacements...)
+}
 
 type MangaDownloader struct {
 	Services []Service
@@ -51,7 +61,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 	if err != nil {
 		return err
 	}
-	out = filepath.Join(out, name)
+	out = filepath.Join(out, md.cleanFilename(name))
 	chapters, err := manga.Chapters()
 	if err != nil {
 		return err
@@ -100,7 +110,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	if err != nil {
 		return err
 	}
-	out = filepath.Join(out, name)
+	out = filepath.Join(out, md.cleanFilename(name))
 	if fileExists(out) {
 		return nil
 	}
@@ -239,4 +249,8 @@ func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
 	defer response.Body.Close()
 	node, err := html.Parse(response.Body)
 	return node, err
+}
+
+func (md *MangaDownloader) cleanFilename(file string) string {
+	return filenameCleanReplacer.Replace(file)
 }
