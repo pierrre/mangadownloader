@@ -1,6 +1,7 @@
 package mangadownloader
 
 import (
+	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
 )
@@ -13,6 +14,9 @@ const (
 var (
 	serviceMangaFoxUrlBase   *url.URL
 	serviceMangaFoxUrlMangas *url.URL
+
+	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
+	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
 )
 
 func init() {
@@ -25,6 +29,7 @@ func init() {
 }
 
 type MangaFoxService struct {
+	Md *MangaDownloader
 }
 
 func (service *MangaFoxService) Supports(u *url.URL) bool {
@@ -32,8 +37,34 @@ func (service *MangaFoxService) Supports(u *url.URL) bool {
 }
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
-	//TODO
-	return nil, errors.New("Not implemented")
+	if !service.Supports(u) {
+		return nil, errors.New("Not supported")
+	}
+
+	rootNode, err := service.Md.HttpGetHtml(u)
+	if err != nil {
+		return nil, err
+	}
+
+	identifyMangaNodes := serviceMangaFoxHtmlSelectorIdentifyManga.Find(rootNode)
+	if len(identifyMangaNodes) == 1 {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
+	}
+
+	identifyChapterNodes := serviceMangaFoxHtmlSelectorIdentifyChapter.Find(rootNode)
+	if len(identifyChapterNodes) == 1 {
+		chapter := &Chapter{
+			Url:     u,
+			Service: service,
+		}
+		return chapter, nil
+	}
+
+	return nil, errors.New("Unknown url")
 }
 
 func (service *MangaFoxService) Mangas() ([]*Manga, error) {

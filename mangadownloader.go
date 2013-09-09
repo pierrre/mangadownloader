@@ -49,6 +49,10 @@ func CreateDefaultMangeDownloader() *MangaDownloader {
 		Md: md,
 	})
 
+	md.Services = append(md.Services, &MangaFoxService{
+		Md: md,
+	})
+
 	return md
 }
 

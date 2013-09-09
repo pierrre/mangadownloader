@@ -18,14 +18,14 @@ var (
 	serviceMangaReaderUrlBase   *url.URL
 	serviceMangaReaderUrlMangas *url.URL
 
+	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
+	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
 	serviceMangaReaderHtmlSelectorMangas, _          = selector.Selector("ul.series_alpha a")
 	serviceMangaReaderHtmlSelectorMangaName, _       = selector.Selector("h2.aname")
 	serviceMangaReaderHtmlSelectorMangaChapters, _   = selector.Selector("#chapterlist a")
 	serviceMangaReaderHtmlSelectorChapterName, _     = selector.Selector("#mangainfo h1")
 	serviceMangaReaderHtmlSelectorChapterPages, _    = selector.Selector("#pageMenu option")
 	serviceMangaReaderHtmlSelectorPageImage, _       = selector.Selector("#img")
-	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
-	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
 
 	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
 )
