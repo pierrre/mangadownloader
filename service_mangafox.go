@@ -17,6 +17,7 @@ var (
 
 	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
 	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
+	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("div#series_info div.cover img")
 )
 
 func init() {
@@ -69,32 +70,46 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 
 func (service *MangaFoxService) Mangas() ([]*Manga, error) {
 	//TODO
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("Mangas() not implemented")
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
-	//TODO
-	return "", errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return "", err
+	}
+
+	nameNodes := serviceMangaFoxHtmlSelectorMangaName.Find(rootNode)
+	if len(nameNodes) != 1 {
+		return "", errors.New("Name node not found")
+	}
+	nameNode := nameNodes[0]
+	name := htmlGetNodeAttribute(nameNode, "alt")
+	if len(name) == 0 {
+		return "", errors.New("Name empty")
+	}
+
+	return name, nil
 }
 
 func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) {
 	//TODO
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("MangaChapters() not implemented")
 }
 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 	//TODO
-	return "", errors.New("Not implemented")
+	return "", errors.New("ChapterName not implemented")
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
 	//TODO
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("ChapterPages not implemented")
 }
 
 func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
 	//TODO
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("PageImageUrl() not implemented")
 }
 
 func (service *MangaFoxService) String() string {
