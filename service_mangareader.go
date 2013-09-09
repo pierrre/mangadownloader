@@ -43,6 +43,41 @@ type MangaReaderService struct {
 	Md *MangaDownloader
 }
 
+func (service *MangaReaderService) Supports(u *url.URL) bool {
+	return u.Host == serviceMangaReaderDomain
+}
+
+func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
+	if !service.Supports(u) {
+		return nil, errors.New("Not supported")
+	}
+
+	rootNode, err := service.Md.HttpGetHtml(u)
+	if err != nil {
+		return nil, err
+	}
+
+	identifyMangaNodes := serviceMangaReaderHtmlSelectorIdentifyManga.Find(rootNode)
+	if len(identifyMangaNodes) == 1 {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
+	}
+
+	identifyChapterNodes := serviceMangaReaderHtmlSelectorIdentifyChapter.Find(rootNode)
+	if len(identifyChapterNodes) == 1 {
+		chapter := &Chapter{
+			Url:     u,
+			Service: service,
+		}
+		return chapter, nil
+	}
+
+	return nil, errors.New("Unknown url")
+}
+
 func (service *MangaReaderService) Mangas() ([]*Manga, error) {
 	rootNode, err := service.Md.HttpGetHtml(serviceMangaReaderUrlMangas)
 	if err != nil {
@@ -177,41 +212,6 @@ func (service *MangaReaderService) PageImageUrl(page *Page) (*url.URL, error) {
 	}
 
 	return imageUrl, nil
-}
-
-func (service *MangaReaderService) Supports(u *url.URL) bool {
-	return u.Host == serviceMangaReaderDomain
-}
-
-func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
-	if !service.Supports(u) {
-		return nil, errors.New("Not supported")
-	}
-
-	rootNode, err := service.Md.HttpGetHtml(u)
-	if err != nil {
-		return nil, err
-	}
-
-	identifyMangaNodes := serviceMangaReaderHtmlSelectorIdentifyManga.Find(rootNode)
-	if len(identifyMangaNodes) == 1 {
-		manga := &Manga{
-			Url:     u,
-			Service: service,
-		}
-		return manga, nil
-	}
-
-	identifyChapterNodes := serviceMangaReaderHtmlSelectorIdentifyChapter.Find(rootNode)
-	if len(identifyChapterNodes) == 1 {
-		chapter := &Chapter{
-			Url:     u,
-			Service: service,
-		}
-		return chapter, nil
-	}
-
-	return nil, errors.New("Unknown url")
 }
 
 func (service *MangaReaderService) String() string {
