@@ -85,9 +85,6 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 	}
 	nameNode := nameNodes[0]
 	name := htmlGetNodeAttribute(nameNode, "alt")
-	if len(name) == 0 {
-		return "", errors.New("Name empty")
-	}
 
 	return name, nil
 }
