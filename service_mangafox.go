@@ -2,6 +2,7 @@ package mangadownloader
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
+	"code.google.com/p/go.net/html"
 	"errors"
 	"net/url"
 )
@@ -18,7 +19,9 @@ var (
 	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
 	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
 	serviceMangaFoxHtmlSelectorMangas, _          = selector.Selector("div.manga_list li a")
-	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("div#series_info div.cover img")
+	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
+	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
+	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
 )
 
 func init() {
@@ -110,8 +113,35 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	//TODO
-	return nil, errors.New("MangaChapters() not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	linkNodes := make([]*html.Node, 0)
+	linkNodes = append(linkNodes, serviceMangaFoxHtmlSelectorMangaChapters1.Find(rootNode)...)
+	linkNodes = append(linkNodes, serviceMangaFoxHtmlSelectorMangaChapters2.Find(rootNode)...)
+
+	chaptersReversed := make([]*Chapter, 0, len(linkNodes))
+	for _, linkNode := range linkNodes {
+		chapterUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
+		if err != nil {
+			return nil, err
+		}
+		chapter := &Chapter{
+			Url:     chapterUrl,
+			Service: service,
+		}
+		chaptersReversed = append(chaptersReversed, chapter)
+	}
+
+	chapterCount := len(chaptersReversed)
+	chapters := make([]*Chapter, 0, chapterCount)
+	for i := chapterCount - 1; i >= 0; i-- {
+		chapters = append(chapters, chaptersReversed[i])
+	}
+
+	return chapters, nil
 }
 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
