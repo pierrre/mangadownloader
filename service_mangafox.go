@@ -5,6 +5,7 @@ import (
 	"code.google.com/p/go.net/html"
 	"errors"
 	"net/url"
+	"regexp"
 )
 
 const (
@@ -22,6 +23,8 @@ var (
 	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
 	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
 	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
+
+	serviceMangaFoxRegexpChapterName, _ = regexp.Compile("^.*\\/c([0-9]+(\\.[0-9]+)?)\\/.*$")
 )
 
 func init() {
@@ -145,8 +148,13 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
-	//TODO
-	return "", errors.New("ChapterName not implemented")
+	matches := serviceMangaFoxRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
+	if matches == nil {
+		return "", errors.New("Invalid name format")
+	}
+	name := matches[1]
+
+	return name, nil
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
