@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	serviceMangaReaderDomain     = "www.mangareader.net"
-	serviceMangaReaderPathMangas = "/alphabetical"
+	serviceMangaReaderDomain            = "www.mangareader.net"
+	serviceMangaReaderPathMangas        = "/alphabetical"
+	serviceMangaReaderChapterDigitCount = 4
 )
 
 var (
@@ -28,6 +29,8 @@ var (
 	serviceMangaReaderHtmlSelectorPageImage, _       = selector.Selector("#img")
 
 	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
+
+	serviceMangaReaderFormatChapter = "%0" + strconv.Itoa(serviceMangaReaderChapterDigitCount) + "d"
 )
 
 func init() {
@@ -167,7 +170,7 @@ func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error)
 	if err != nil {
 		return "", err
 	}
-	name = fmt.Sprintf("%04d", nameInt)
+	name = fmt.Sprintf(serviceMangaReaderFormatChapter, nameInt)
 
 	return name, nil
 }
