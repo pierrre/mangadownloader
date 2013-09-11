@@ -17,6 +17,7 @@ var (
 
 	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
 	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
+	serviceMangaFoxHtmlSelectorMangas, _          = selector.Selector("div.manga_list li a")
 	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("div#series_info div.cover img")
 )
 
@@ -69,8 +70,27 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaFoxService) Mangas() ([]*Manga, error) {
-	//TODO
-	return nil, errors.New("Mangas() not implemented")
+	rootNode, err := service.Md.HttpGetHtml(serviceMangaFoxUrlMangas)
+	if err != nil {
+		return nil, err
+	}
+
+	linkNodes := serviceMangaFoxHtmlSelectorMangas.Find(rootNode)
+
+	mangas := make([]*Manga, 0, len(linkNodes))
+	for _, linkNode := range linkNodes {
+		mangaUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
+		if err != nil {
+			return nil, err
+		}
+		manga := &Manga{
+			Url:     mangaUrl,
+			Service: service,
+		}
+		mangas = append(mangas, manga)
+	}
+
+	return mangas, nil
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
