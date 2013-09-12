@@ -28,7 +28,7 @@ var (
 	serviceMangaReaderHtmlSelectorChapterPages, _    = selector.Selector("#pageMenu option")
 	serviceMangaReaderHtmlSelectorPageImage, _       = selector.Selector("#img")
 
-	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* ([0-9]*)$")
+	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* (\\d*)$")
 
 	serviceMangaReaderFormatChapter = "%0" + strconv.Itoa(serviceMangaReaderChapterDigitCount) + "d"
 )
