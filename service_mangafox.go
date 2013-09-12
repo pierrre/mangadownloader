@@ -4,8 +4,10 @@ import (
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
 	"errors"
+	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 )
 
 const (
@@ -23,8 +25,10 @@ var (
 	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
 	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
 	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
+	serviceMangaFoxHtmlSelectorChapterPages, _    = selector.Selector("#top_center_bar div.r option")
 
-	serviceMangaFoxRegexpChapterName, _ = regexp.Compile("^.*\\/c([0-9]+(\\.[0-9]+)?)\\/.*$")
+	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?)/.*$")
+	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
 
 func init() {
@@ -158,8 +162,36 @@ func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	//TODO
-	return nil, errors.New("ChapterPages not implemented")
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	basePageUrl := urlCopy(chapter.Url)
+	basePageUrl.Path = serviceMangaFoxRegexpPageBaseUrlPath.ReplaceAllString(basePageUrl.Path, "")
+
+	optionNodes := serviceMangaFoxHtmlSelectorChapterPages.Find(rootNode)
+
+	pages := make([]*Page, 0, len(optionNodes))
+	for _, optionNode := range optionNodes {
+		pageNumberString := htmlGetNodeAttribute(optionNode, "value")
+		pageNumber, err := strconv.Atoi(pageNumberString)
+		if err != nil {
+			return nil, err
+		}
+		if pageNumber <= 0 {
+			continue
+		}
+		pageUrl := urlCopy(basePageUrl)
+		pageUrl.Path += fmt.Sprintf("/%d.html", pageNumber)
+		page := &Page{
+			Url:     pageUrl,
+			Service: service,
+		}
+		pages = append(pages, page)
+	}
+
+	return pages, nil
 }
 
 func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
