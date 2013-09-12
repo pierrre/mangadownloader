@@ -26,6 +26,7 @@ var (
 	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
 	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
 	serviceMangaFoxHtmlSelectorChapterPages, _    = selector.Selector("#top_center_bar div.r option")
+	serviceMangaFoxHtmlSelectorPageImage, _       = selector.Selector("#image")
 
 	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?)/.*$")
 	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
@@ -195,8 +196,23 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 }
 
 func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
-	//TODO
-	return nil, errors.New("PageImageUrl() not implemented")
+	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	imgNodes := serviceMangaFoxHtmlSelectorPageImage.Find(rootNode)
+	if len(imgNodes) != 1 {
+		return nil, errors.New("Image node not found")
+	}
+	imgNode := imgNodes[0]
+
+	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	if err != nil {
+		return nil, err
+	}
+
+	return imageUrl, nil
 }
 
 func (service *MangaFoxService) String() string {
