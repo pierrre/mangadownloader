@@ -204,7 +204,7 @@ func (service *MangaReaderService) PageImageUrl(page *Page) (*url.URL, error) {
 	}
 
 	imgNodes := serviceMangaReaderHtmlSelectorPageImage.Find(rootNode)
-	if len(imgNodes) < 1 {
+	if len(imgNodes) != 1 {
 		return nil, errors.New("Image node not found")
 	}
 	imgNode := imgNodes[0]
