@@ -6,45 +6,45 @@ import (
 )
 
 var (
-	serviceMangReaderTestUrlManga, _   = url.Parse("http://www.mangareader.net/97/gantz.html")
-	serviceMangReaderTestUrlChapter, _ = url.Parse("http://www.mangareader.net/97-1220-12/gantz/chapter-58.html")
-	serviceMangReaderTestUrlDummy, _   = url.Parse("http://www.google.com")
+	serviceMangFoxTestUrlManga, _   = url.Parse("http://mangafox.me/manga/berserk/")
+	serviceMangFoxTestUrlChapter, _ = url.Parse("http://mangafox.me/manga/berserk/c134/1.html")
+	serviceMangFoxTestUrlDummy, _   = url.Parse("http://www.google.com")
 )
 
-func getTestMangaReaderService() *MangaReaderService {
+func getTestMangaFoxService() *MangaFoxService {
 	md := CreateDefaultMangeDownloader()
 	for _, service := range md.Services {
-		if mangaReaderService, ok := service.(*MangaReaderService); ok {
-			return mangaReaderService
+		if mangaFoxService, ok := service.(*MangaFoxService); ok {
+			return mangaFoxService
 		}
 	}
 	return nil
 }
 
-func TestMangaReaderServiceSupports(t *testing.T) {
+func TestMangaFoxServiceSupports(t *testing.T) {
 	t.Parallel()
 
-	service := getTestMangaReaderService()
+	service := getTestMangaFoxService()
 
-	if !service.Supports(serviceMangReaderTestUrlManga) {
+	if !service.Supports(serviceMangFoxTestUrlManga) {
 		t.Error("Not supported")
 	}
 
-	if !service.Supports(serviceMangReaderTestUrlChapter) {
+	if !service.Supports(serviceMangFoxTestUrlChapter) {
 		t.Error("Not supported")
 	}
 
-	if service.Supports(serviceMangReaderTestUrlDummy) {
+	if service.Supports(serviceMangFoxTestUrlDummy) {
 		t.Error("Supported")
 	}
 }
 
-func TestMangaReaderServiceManga(t *testing.T) {
+func TestMangaFoxServiceManga(t *testing.T) {
 	t.Parallel()
 
-	service := getTestMangaReaderService()
+	service := getTestMangaFoxService()
 
-	object, err := service.Identify(serviceMangReaderTestUrlManga)
+	object, err := service.Identify(serviceMangFoxTestUrlManga)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,12 +71,12 @@ func TestMangaReaderServiceManga(t *testing.T) {
 	}
 }
 
-func TestMangaReaderServiceChapter(t *testing.T) {
+func TestMangaFoxServiceChapter(t *testing.T) {
 	t.Parallel()
 
-	service := getTestMangaReaderService()
+	service := getTestMangaFoxService()
 
-	object, err := service.Identify(serviceMangReaderTestUrlChapter)
+	object, err := service.Identify(serviceMangFoxTestUrlChapter)
 	if err != nil {
 		t.Fatal(err)
 	}
