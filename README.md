@@ -28,3 +28,5 @@
 - Concurrency for input
 - Progress
 - User agent
+- Improve error handling
+- Improve http error codes
