@@ -21,7 +21,6 @@ var (
 
 	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
 	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
-	serviceMangaFoxHtmlSelectorMangas, _          = selector.Selector("div.manga_list li a")
 	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
 	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
 	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
@@ -78,30 +77,6 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 	}
 
 	return nil, errors.New("Unknown url")
-}
-
-func (service *MangaFoxService) Mangas() ([]*Manga, error) {
-	rootNode, err := service.Md.HttpGetHtml(serviceMangaFoxUrlMangas)
-	if err != nil {
-		return nil, err
-	}
-
-	linkNodes := serviceMangaFoxHtmlSelectorMangas.Find(rootNode)
-
-	mangas := make([]*Manga, 0, len(linkNodes))
-	for _, linkNode := range linkNodes {
-		mangaUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
-		if err != nil {
-			return nil, err
-		}
-		manga := &Manga{
-			Url:     mangaUrl,
-			Service: service,
-		}
-		mangas = append(mangas, manga)
-	}
-
-	return mangas, nil
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {

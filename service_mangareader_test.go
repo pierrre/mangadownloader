@@ -39,21 +39,6 @@ func TestSupports(t *testing.T) {
 	}
 }
 
-func TestMangas(t *testing.T) {
-	t.Parallel()
-
-	service := getTestMangaReaderService()
-
-	mangas, err := service.Mangas()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(mangas) == 0 {
-		t.Fatal("No manga")
-	}
-}
-
 func TestManga(t *testing.T) {
 	t.Parallel()
 
