@@ -37,6 +37,10 @@ Usage of ./mangadownloader:
 ## Build
 `go build cmd/mangadownloader.go`
 
+## Help
+- Twitter: @pierredurand87
+- Github issue
+
 ## TODO
 - Readme
 - More services
