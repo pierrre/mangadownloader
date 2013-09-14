@@ -13,10 +13,10 @@ A manga downloader written in Go (Golang).
 
 Examples:
 
-`
+```
 ./mangadownloader http://www.mangareader.net/97/gantz.html
 ./mangadownloader http://mangafox.me/manga/berserk/c134/1.html
-`
+```
 
 Options:
 
