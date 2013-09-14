@@ -1,8 +1,43 @@
 # MangaDownloader
+A manga downloader written in Go (Golang).
 
+## Features
+- Command line
+- Download manga from websites (more to come)
+    - http://www.mangareader.net
+    - http://mangafox.me
+- Parallel download
+
+## Usage
+`./mangadownloader [urls...]`
+
+Examples:
+
+`
+./mangadownloader http://www.mangareader.net/97/gantz.html
+./mangadownloader http://mangafox.me/manga/berserk/c134/1.html
+`
+
+Options:
+
+`./mangadownloader -h`
+
+```
+Usage of ./mangadownloader:
+  -httpretry=5: Http retry
+  -out="": Output directory
+  -pagedigitcount=4: Page digit count
+  -parallelchapter=4: Parallel chapter
+  -parallelcypage=8: Parallel page
+```
+
+## Binaries
+https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
+
+## Build
+`go build cmd/mangadownloader.go`
 
 ## TODO
-
 - Readme
 - More services
     - animea
