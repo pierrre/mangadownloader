@@ -35,11 +35,11 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services           []Service
-	PageDigitCount     int
-	HttpRetry          int
-	ConcurrencyChapter int
-	ConcurrencyPage    int
+	Services        []Service
+	PageDigitCount  int
+	HttpRetry       int
+	ParallelChapter int
+	ParallelPage    int
 }
 
 func CreateDefaultMangeDownloader() *MangaDownloader {
@@ -85,14 +85,14 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 		close(work)
 	}()
 
-	concurrencyChapter := md.ConcurrencyChapter
-	if concurrencyChapter < 1 {
-		concurrencyChapter = 1
+	parallelChapter := md.ParallelChapter
+	if parallelChapter < 1 {
+		parallelChapter = 1
 	}
 	wg := new(sync.WaitGroup)
-	wg.Add(concurrencyChapter)
+	wg.Add(parallelChapter)
 	result := make(chan error)
-	for i := 0; i < concurrencyChapter; i++ {
+	for i := 0; i < parallelChapter; i++ {
 		go func() {
 			for chapter := range work {
 				result <- md.DownloadChapter(chapter, out)
@@ -151,14 +151,14 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 		close(work)
 	}()
 
-	concurrencyPage := md.ConcurrencyPage
-	if concurrencyPage < 1 {
-		concurrencyPage = 1
+	parallelPage := md.ParallelPage
+	if parallelPage < 1 {
+		parallelPage = 1
 	}
 	wg := new(sync.WaitGroup)
-	wg.Add(concurrencyPage)
+	wg.Add(parallelPage)
 	result := make(chan error)
-	for i := 0; i < concurrencyPage; i++ {
+	for i := 0; i < parallelPage; i++ {
 		go func() {
 			for chapterPageWork := range work {
 				result <- md.downloadPageWithIndex(chapterPageWork.page, outTmp, chapterPageWork.index)

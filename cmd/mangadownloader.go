@@ -11,20 +11,16 @@ func main() {
 	outFlag := flag.String("out", "", "Output directory")
 	pageDigitCountFlag := flag.Int("pagedigitcount", 4, "Page digit count")
 	httpRetryFlag := flag.Int("httpretry", 5, "Http retry")
-	concurrencyChapterFlag := flag.Int("concurrencychapter", 4, "Concurrency chapter")
-	concurrencyPageFlag := flag.Int("concurrencypage", 8, "Concurrency page")
+	parallelChapterFlag := flag.Int("parallelchapter", 4, "Parallel chapter")
+	parallelPageFlag := flag.Int("parallelcypage", 8, "Parallel page")
 	flag.Parse()
 	out := *outFlag
-	pageDigitCount := *pageDigitCountFlag
-	httpRetry := *httpRetryFlag
-	concurrencyChapter := *concurrencyChapterFlag
-	concurrencyPage := *concurrencyPageFlag
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
-	md.PageDigitCount = pageDigitCount
-	md.HttpRetry = httpRetry
-	md.ConcurrencyChapter = concurrencyChapter
-	md.ConcurrencyPage = concurrencyPage
+	md.PageDigitCount = *pageDigitCountFlag
+	md.HttpRetry = *httpRetryFlag
+	md.ParallelChapter = *parallelChapterFlag
+	md.ParallelPage = *parallelPageFlag
 
 	for _, arg := range flag.Args() {
 		u, err := url.Parse(arg)
