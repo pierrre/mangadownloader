@@ -1,4 +1,4 @@
-# MangaDownloader
+# Manga Downloader
 A manga downloader written in Go (Golang).
 
 ## Features
