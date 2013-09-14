@@ -31,7 +31,7 @@ Usage of ./mangadownloader:
   -out="": Output directory
   -pagedigitcount=4: Page digit count
   -parallelchapter=4: Parallel chapter
-  -parallelcypage=8: Parallel page
+  -parallelpage=8: Parallel page
 ```
 
 ## Build

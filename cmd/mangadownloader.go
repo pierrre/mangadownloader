@@ -12,7 +12,7 @@ func main() {
 	pageDigitCountFlag := flag.Int("pagedigitcount", 4, "Page digit count")
 	httpRetryFlag := flag.Int("httpretry", 5, "Http retry")
 	parallelChapterFlag := flag.Int("parallelchapter", 4, "Parallel chapter")
-	parallelPageFlag := flag.Int("parallelcypage", 8, "Parallel page")
+	parallelPageFlag := flag.Int("parallelpage", 8, "Parallel page")
 	flag.Parse()
 	out := *outFlag
 
