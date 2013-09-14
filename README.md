@@ -8,6 +8,9 @@ A manga downloader written in Go (Golang).
     - http://mangafox.me
 - Parallel download
 
+## Binaries
+https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
+
 ## Usage
 `./mangadownloader [urls...]`
 
@@ -30,9 +33,6 @@ Usage of ./mangadownloader:
   -parallelchapter=4: Parallel chapter
   -parallelcypage=8: Parallel page
 ```
-
-## Binaries
-https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
 
 ## Build
 `go build cmd/mangadownloader.go`
