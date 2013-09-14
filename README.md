@@ -2,10 +2,10 @@
 A manga downloader written in Go (Golang).
 
 ## Features
-- Command line
 - Download manga from websites (more to come)
     - http://www.mangareader.net
     - http://mangafox.me
+- Command line
 - Parallel download
 
 ## Binaries
