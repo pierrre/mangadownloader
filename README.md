@@ -42,7 +42,7 @@ Usage of ./mangadownloader:
 - Github issue
 
 ## TODO
-- Readme
+- CBZ support
 - More services
     - animea
     - unixmanga
