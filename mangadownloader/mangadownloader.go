@@ -9,12 +9,14 @@ import (
 
 func main() {
 	outFlag := flag.String("out", "", "Output directory")
+	cbzFlag := flag.Bool("cbz", false, "CBZ")
 	pageDigitCountFlag := flag.Int("pagedigitcount", 4, "Page digit count")
 	httpRetryFlag := flag.Int("httpretry", 5, "Http retry")
 	parallelChapterFlag := flag.Int("parallelchapter", 4, "Parallel chapter")
 	parallelPageFlag := flag.Int("parallelpage", 8, "Parallel page")
 	flag.Parse()
 	out := *outFlag
+	cbz := *cbzFlag
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
 	md.PageDigitCount = *pageDigitCountFlag
@@ -33,12 +35,12 @@ func main() {
 		}
 		switch object := o.(type) {
 		case *mangadownloader.Manga:
-			err := md.DownloadManga(object, out)
+			err := md.DownloadManga(object, out, cbz)
 			if err != nil {
 				panic(err)
 			}
 		case *mangadownloader.Chapter:
-			err := md.DownloadChapter(object, out)
+			err := md.DownloadChapter(object, out, cbz)
 			if err != nil {
 				panic(err)
 			}

@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/go.net/html"
 	"errors"
 	"fmt"
+	"github.com/pierrre/archivefile/zip"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -66,7 +67,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 	return nil, errors.New("Unsupported url")
 }
 
-func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
+func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) error {
 	name, err := manga.Name()
 	if err != nil {
 		return err
@@ -95,7 +96,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 	for i := 0; i < parallelChapter; i++ {
 		go func() {
 			for chapter := range work {
-				result <- md.DownloadChapter(chapter, out)
+				result <- md.DownloadChapter(chapter, out, cbz)
 			}
 			wg.Done()
 		}()
@@ -118,7 +119,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string) error {
 	return nil
 }
 
-func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
+func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz bool) error {
 	name, err := chapter.Name()
 	if err != nil {
 		return err
@@ -184,6 +185,18 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string) error {
 	err = os.Rename(outTmp, out)
 	if err != nil {
 		return err
+	}
+
+	if cbz {
+		outCbz := out + ".cbz"
+		err = zip.ArchiveFile(out, false, outCbz)
+		if err != nil {
+			return err
+		}
+		err = os.RemoveAll(out)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
