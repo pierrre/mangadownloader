@@ -177,7 +177,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) error {
 	type pageWork struct {
 		page  *Page
-		index uint
+		index int
 	}
 
 	work := make(chan *pageWork)
@@ -185,7 +185,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) er
 		for index, page := range pages {
 			work <- &pageWork{
 				page:  page,
-				index: uint(index),
+				index: index,
 			}
 		}
 		close(work)
@@ -224,7 +224,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) er
 	return nil
 }
 
-func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index uint) error {
+func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index int) error {
 	filenameFormat := "%0" + strconv.Itoa(md.PageDigitCount) + "d"
 	filename := fmt.Sprintf(filenameFormat, index+1)
 	return md.DownloadPage(page, out, filename)
