@@ -12,26 +12,24 @@ A manga downloader written in Go (Golang).
 https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
 
 ## Usage
-`./mangadownloader [urls...]`
+```
+Usage:
+Pass urls (manga/chapter/page) as argument.
+
+Options: (pass them BEFORE the arguments, Go' "flag" package is not really smart...)
+  -cbz=false: CBZ
+  -httpretry=5: Http retry
+  -out="": Output directory
+  -pagedigitcount=4: Page digit count
+  -parallelchapter=4: Parallel chapter
+  -parallelpage=8: Parallel page
+```
 
 Examples:
 
 ```
 ./mangadownloader http://www.mangareader.net/97/gantz.html
 ./mangadownloader http://mangafox.me/manga/berserk/c134/1.html
-```
-
-Options:
-
-`./mangadownloader -h`
-
-```
-Usage of ./mangadownloader:
-  -httpretry=5: Http retry
-  -out="": Output directory
-  -pagedigitcount=4: Page digit count
-  -parallelchapter=4: Parallel chapter
-  -parallelpage=8: Parallel page
 ```
 
 ## Build

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/pierrre/mangadownloader"
 	"net/url"
 )
@@ -18,13 +19,23 @@ func main() {
 	out := *outFlag
 	cbz := *cbzFlag
 
+	args := flag.Args()
+	if len(args) == 0 {
+		fmt.Println("Usage:")
+		fmt.Println("Pass urls (manga/chapter/page) as argument.")
+		fmt.Println("")
+		fmt.Println("Options: (pass them BEFORE the arguments, Go' \"flag\" package is not really smart...)")
+		flag.PrintDefaults()
+		return
+	}
+
 	md := mangadownloader.CreateDefaultMangeDownloader()
 	md.PageDigitCount = *pageDigitCountFlag
 	md.HttpRetry = *httpRetryFlag
 	md.ParallelChapter = *parallelChapterFlag
 	md.ParallelPage = *parallelPageFlag
 
-	for _, arg := range flag.Args() {
+	for _, arg := range args {
 		u, err := url.Parse(arg)
 		if err != nil {
 			panic(err)
