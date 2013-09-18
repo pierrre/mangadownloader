@@ -21,11 +21,6 @@ var (
 	filenameCleanReplacer     *strings.Replacer
 )
 
-type chapterPageWork struct {
-	page  *Page
-	index uint
-}
-
 func init() {
 	filenameCleanReplacements := make([]string, len(filenameReservedCharacters)*2)
 	for _, char := range filenameReservedCharacters {
@@ -72,12 +67,23 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) err
 	if err != nil {
 		return err
 	}
+
 	out = filepath.Join(out, md.cleanFilename(name))
+
 	chapters, err := manga.Chapters()
 	if err != nil {
 		return err
 	}
 
+	err = md.downloadChapters(chapters, out, cbz)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, cbz bool) error {
 	work := make(chan *Chapter)
 	go func() {
 		for _, chapter := range chapters {
@@ -124,10 +130,12 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 	if err != nil {
 		return err
 	}
+
 	out = filepath.Join(out, md.cleanFilename(name))
 	if fileExists(out) {
 		return nil
 	}
+
 	outTmp := out + ".tmp"
 	if fileExists(outTmp) {
 		err = os.RemoveAll(outTmp)
@@ -141,45 +149,9 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 		return err
 	}
 
-	work := make(chan *chapterPageWork)
-	go func() {
-		for index, page := range pages {
-			work <- &chapterPageWork{
-				page:  page,
-				index: uint(index),
-			}
-		}
-		close(work)
-	}()
-
-	parallelPage := md.ParallelPage
-	if parallelPage < 1 {
-		parallelPage = 1
-	}
-	wg := new(sync.WaitGroup)
-	wg.Add(parallelPage)
-	result := make(chan error)
-	for i := 0; i < parallelPage; i++ {
-		go func() {
-			for chapterPageWork := range work {
-				result <- md.downloadPageWithIndex(chapterPageWork.page, outTmp, chapterPageWork.index)
-			}
-			wg.Done()
-		}()
-	}
-	go func() {
-		wg.Wait()
-		close(result)
-	}()
-
-	errs := make(MultiError, 0)
-	for err := range result {
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if len(errs) > 0 {
-		return errs
+	err = md.downloadPages(pages, outTmp, cbz)
+	if err != nil {
+		return err
 	}
 
 	err = os.Rename(outTmp, out)
@@ -197,6 +169,56 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) error {
+	type pageWork struct {
+		page  *Page
+		index uint
+	}
+
+	work := make(chan *pageWork)
+	go func() {
+		for index, page := range pages {
+			work <- &pageWork{
+				page:  page,
+				index: uint(index),
+			}
+		}
+		close(work)
+	}()
+
+	parallelPage := md.ParallelPage
+	if parallelPage < 1 {
+		parallelPage = 1
+	}
+	wg := new(sync.WaitGroup)
+	wg.Add(parallelPage)
+	result := make(chan error)
+	for i := 0; i < parallelPage; i++ {
+		go func() {
+			for chapterPageWork := range work {
+				result <- md.downloadPageWithIndex(chapterPageWork.page, out, chapterPageWork.index)
+			}
+			wg.Done()
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	errs := make(MultiError, 0)
+	for err := range result {
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 
 	return nil
