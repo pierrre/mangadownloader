@@ -34,7 +34,11 @@ Examples:
 ```
 
 ## Build
-`go build cmd/mangadownloader.go`
+`go build mangadownloader/mangadownloader.go`
+
+or
+
+`go get github.com/pierrre/mangadownloader/mangadownloader` and the binary will be in your `GOPATH/bin`
 
 ## Help
 - Twitter: @pierredurand87
