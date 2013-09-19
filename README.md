@@ -5,8 +5,9 @@ A manga downloader written in Go (Golang).
 - Download manga from websites (more to come)
     - http://www.mangareader.net
     - http://mangafox.me
-- Command line
+- CBZ support
 - Parallel download
+- Command line
 
 ## Binaries
 https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
@@ -16,7 +17,7 @@ https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
 Usage:
 Pass urls (manga/chapter/page) as argument.
 
-Options: (pass them BEFORE the arguments, Go' "flag" package is not really smart...)
+Options: (pass them BEFORE the arguments, Go's "flag" package is not really smart...)
   -cbz=false: CBZ
   -httpretry=5: Http retry
   -out="": Output directory
