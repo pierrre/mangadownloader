@@ -13,12 +13,9 @@ var (
 
 func getTestMangaFoxService() *MangaFoxService {
 	md := CreateDefaultMangeDownloader()
-	for _, service := range md.Services {
-		if mangaFoxService, ok := service.(*MangaFoxService); ok {
-			return mangaFoxService
-		}
-	}
-	return nil
+	service := md.Services["mangafox"]
+	mangaFoxService := service.(*MangaFoxService)
+	return mangaFoxService
 }
 
 func TestMangaFoxServiceSupports(t *testing.T) {

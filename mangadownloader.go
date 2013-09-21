@@ -31,7 +31,7 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services        []Service
+	Services        map[string]Service
 	PageDigitCount  int
 	HttpRetry       int
 	ParallelChapter int
@@ -40,6 +40,7 @@ type MangaDownloader struct {
 
 func NewMangaDownloader() *MangaDownloader {
 	md := new(MangaDownloader)
+	md.Services = make(map[string]Service)
 
 	return md
 }
@@ -47,13 +48,13 @@ func NewMangaDownloader() *MangaDownloader {
 func CreateDefaultMangeDownloader() *MangaDownloader {
 	md := NewMangaDownloader()
 
-	md.Services = append(md.Services, &MangaReaderService{
+	md.Services["mangareader"] = &MangaReaderService{
 		Md: md,
-	})
+	}
 
-	md.Services = append(md.Services, &MangaFoxService{
+	md.Services["mangafox"] = &MangaFoxService{
 		Md: md,
-	})
+	}
 
 	return md
 }
