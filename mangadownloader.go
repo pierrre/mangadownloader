@@ -38,8 +38,14 @@ type MangaDownloader struct {
 	ParallelPage    int
 }
 
+func NewMangaDownloader() *MangaDownloader {
+	md := new(MangaDownloader)
+
+	return md
+}
+
 func CreateDefaultMangeDownloader() *MangaDownloader {
-	md := &MangaDownloader{}
+	md := NewMangaDownloader()
 
 	md.Services = append(md.Services, &MangaReaderService{
 		Md: md,
