@@ -5,6 +5,7 @@ A manga downloader written in Go (Golang).
 - Download manga from websites (more to come)
     - http://www.mangareader.net
     - http://mangafox.me
+    - http://www.mangahere.com
 - CBZ support
 - Parallel download
 - Command line
@@ -45,7 +46,6 @@ or
 - Github issue
 
 ## TODO
-- CBZ support
 - More services
     - animea
     - unixmanga
@@ -57,7 +57,6 @@ or
     - mangaeden
     - mangable
     - deliciousmanga
-    - mangahere
     - tenmanga
     - mangawall
     - mangastream

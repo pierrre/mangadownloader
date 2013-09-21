@@ -48,11 +48,15 @@ func NewMangaDownloader() *MangaDownloader {
 func CreateDefaultMangeDownloader() *MangaDownloader {
 	md := NewMangaDownloader()
 
-	md.Services["mangareader"] = &MangaReaderService{
+	md.Services["mangafox"] = &MangaFoxService{
 		Md: md,
 	}
 
-	md.Services["mangafox"] = &MangaFoxService{
+	md.Services["mangahere"] = &MangaHereService{
+		Md: md,
+	}
+
+	md.Services["mangareader"] = &MangaReaderService{
 		Md: md,
 	}
 
