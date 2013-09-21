@@ -17,7 +17,6 @@ func main() {
 	parallelPageFlag := flag.Int("parallelpage", 8, "Parallel page")
 	flag.Parse()
 	out := *outFlag
-	cbz := *cbzFlag
 
 	args := flag.Args()
 	if len(args) == 0 {
@@ -30,10 +29,14 @@ func main() {
 	}
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
-	md.PageDigitCount = *pageDigitCountFlag
 	md.HttpRetry = *httpRetryFlag
-	md.ParallelChapter = *parallelChapterFlag
-	md.ParallelPage = *parallelPageFlag
+
+	options := &mangadownloader.Options{
+		Cbz:             *cbzFlag,
+		PageDigitCount:  *pageDigitCountFlag,
+		ParallelChapter: *parallelChapterFlag,
+		ParallelPage:    *parallelPageFlag,
+	}
 
 	for _, arg := range args {
 		u, err := url.Parse(arg)
@@ -46,17 +49,17 @@ func main() {
 		}
 		switch object := o.(type) {
 		case *mangadownloader.Manga:
-			err := md.DownloadManga(object, out, cbz)
+			err := md.DownloadManga(object, out, options)
 			if err != nil {
 				panic(err)
 			}
 		case *mangadownloader.Chapter:
-			err := md.DownloadChapter(object, out, cbz)
+			err := md.DownloadChapter(object, out, options)
 			if err != nil {
 				panic(err)
 			}
 		case *mangadownloader.Page:
-			err := md.DownloadPage(object, out, "image")
+			err := md.DownloadPage(object, out, "image", options)
 			if err != nil {
 				panic(err)
 			}

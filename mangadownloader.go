@@ -31,11 +31,8 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services        map[string]Service
-	PageDigitCount  int
-	HttpRetry       int
-	ParallelChapter int
-	ParallelPage    int
+	Services  map[string]Service
+	HttpRetry int
 }
 
 func NewMangaDownloader() *MangaDownloader {
@@ -73,7 +70,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 	return nil, errors.New("Unsupported url")
 }
 
-func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) error {
+func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Options) error {
 	name, err := manga.Name()
 	if err != nil {
 		return err
@@ -86,7 +83,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) err
 		return err
 	}
 
-	err = md.downloadChapters(chapters, out, cbz)
+	err = md.downloadChapters(chapters, out, options)
 	if err != nil {
 		return err
 	}
@@ -94,7 +91,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) err
 	return nil
 }
 
-func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, cbz bool) error {
+func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, options *Options) error {
 	work := make(chan *Chapter)
 	go func() {
 		for _, chapter := range chapters {
@@ -103,7 +100,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, cbz
 		close(work)
 	}()
 
-	parallelChapter := md.ParallelChapter
+	parallelChapter := options.ParallelChapter
 	if parallelChapter < 1 {
 		parallelChapter = 1
 	}
@@ -113,7 +110,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, cbz
 	for i := 0; i < parallelChapter; i++ {
 		go func() {
 			for chapter := range work {
-				result <- md.DownloadChapter(chapter, out, cbz)
+				result <- md.DownloadChapter(chapter, out, options)
 			}
 			wg.Done()
 		}()
@@ -136,7 +133,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, cbz
 	return nil
 }
 
-func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz bool) error {
+func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options *Options) error {
 	name, err := chapter.Name()
 	if err != nil {
 		return err
@@ -144,7 +141,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 
 	out = filepath.Join(out, cleanFilename(name))
 	var outFinal string
-	if cbz {
+	if options.Cbz {
 		outFinal = getCbzPath(out)
 	} else {
 		outFinal = out
@@ -166,7 +163,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 		return err
 	}
 
-	err = md.downloadPages(pages, outTmp, cbz)
+	err = md.downloadPages(pages, outTmp, options)
 	if err != nil {
 		return err
 	}
@@ -176,7 +173,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 		return err
 	}
 
-	if cbz {
+	if options.Cbz {
 		outCbz := getCbzPath(out)
 		err = zip.ArchiveFile(out, false, outCbz, nil)
 		if err != nil {
@@ -191,7 +188,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 	return nil
 }
 
-func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) error {
+func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Options) error {
 	type pageWork struct {
 		page  *Page
 		index int
@@ -208,7 +205,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) er
 		close(work)
 	}()
 
-	parallelPage := md.ParallelPage
+	parallelPage := options.ParallelPage
 	if parallelPage < 1 {
 		parallelPage = 1
 	}
@@ -218,7 +215,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) er
 	for i := 0; i < parallelPage; i++ {
 		go func() {
 			for chapterPageWork := range work {
-				result <- md.downloadPageWithIndex(chapterPageWork.page, out, chapterPageWork.index)
+				result <- md.downloadPageWithIndex(chapterPageWork.page, out, chapterPageWork.index, options)
 			}
 			wg.Done()
 		}()
@@ -241,13 +238,13 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, cbz bool) er
 	return nil
 }
 
-func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index int) error {
-	filenameFormat := "%0" + strconv.Itoa(md.PageDigitCount) + "d"
+func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index int, options *Options) error {
+	filenameFormat := "%0" + strconv.Itoa(options.PageDigitCount) + "d"
 	filename := fmt.Sprintf(filenameFormat, index+1)
-	return md.DownloadPage(page, out, filename)
+	return md.DownloadPage(page, out, filename, options)
 }
 
-func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string) error {
+func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string, options *Options) error {
 	out = filepath.Join(out, filename)
 
 	imageUrl, err := page.ImageUrl()
@@ -319,6 +316,13 @@ func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
 	defer response.Body.Close()
 	node, err := html.Parse(response.Body)
 	return node, err
+}
+
+type Options struct {
+	Cbz             bool
+	PageDigitCount  int
+	ParallelChapter int
+	ParallelPage    int
 }
 
 func cleanFilename(name string) string {
