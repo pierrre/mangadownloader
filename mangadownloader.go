@@ -75,7 +75,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, cbz bool) err
 		return err
 	}
 
-	out = filepath.Join(out, md.cleanFilename(name))
+	out = filepath.Join(out, cleanFilename(name))
 
 	chapters, err := manga.Chapters()
 	if err != nil {
@@ -138,7 +138,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, cbz boo
 		return err
 	}
 
-	out = filepath.Join(out, md.cleanFilename(name))
+	out = filepath.Join(out, cleanFilename(name))
 	var outFinal string
 	if cbz {
 		outFinal = getCbzPath(out)
@@ -317,7 +317,7 @@ func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
 	return node, err
 }
 
-func (md *MangaDownloader) cleanFilename(name string) string {
+func cleanFilename(name string) string {
 	return filenameCleanReplacer.Replace(name)
 }
 
