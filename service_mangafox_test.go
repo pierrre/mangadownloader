@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	serviceMangFoxTestUrlManga, _   = url.Parse("http://mangafox.me/manga/berserk/")
-	serviceMangFoxTestUrlChapter, _ = url.Parse("http://mangafox.me/manga/berserk/c134/1.html")
-	serviceMangFoxTestUrlDummy, _   = url.Parse("http://www.google.com")
+	serviceMangaFoxTestUrlManga, _   = url.Parse("http://mangafox.me/manga/berserk/")
+	serviceMangaFoxTestUrlChapter, _ = url.Parse("http://mangafox.me/manga/berserk/c134/1.html")
+	serviceMangaFoxTestUrlDummy, _   = url.Parse("http://www.google.com")
 )
 
 func getTestMangaFoxService() *MangaFoxService {
@@ -23,15 +23,15 @@ func TestMangaFoxServiceSupports(t *testing.T) {
 
 	service := getTestMangaFoxService()
 
-	if !service.Supports(serviceMangFoxTestUrlManga) {
+	if !service.Supports(serviceMangaFoxTestUrlManga) {
 		t.Error("Not supported")
 	}
 
-	if !service.Supports(serviceMangFoxTestUrlChapter) {
+	if !service.Supports(serviceMangaFoxTestUrlChapter) {
 		t.Error("Not supported")
 	}
 
-	if service.Supports(serviceMangFoxTestUrlDummy) {
+	if service.Supports(serviceMangaFoxTestUrlDummy) {
 		t.Error("Supported")
 	}
 }
@@ -41,7 +41,7 @@ func TestMangaFoxServiceManga(t *testing.T) {
 
 	service := getTestMangaFoxService()
 
-	object, err := service.Identify(serviceMangFoxTestUrlManga)
+	object, err := service.Identify(serviceMangaFoxTestUrlManga)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +73,7 @@ func TestMangaFoxServiceChapter(t *testing.T) {
 
 	service := getTestMangaFoxService()
 
-	object, err := service.Identify(serviceMangFoxTestUrlChapter)
+	object, err := service.Identify(serviceMangaFoxTestUrlChapter)
 	if err != nil {
 		t.Fatal(err)
 	}
