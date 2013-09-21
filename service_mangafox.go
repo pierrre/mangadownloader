@@ -23,7 +23,7 @@ var (
 	serviceMangaFoxHtmlSelectorChapterPages, _    = selector.Selector("#top_center_bar div.r option")
 	serviceMangaFoxHtmlSelectorPageImage, _       = selector.Selector("#image")
 
-	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?)/.*$")
+	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
 	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
 
