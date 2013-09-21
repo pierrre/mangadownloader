@@ -11,14 +11,10 @@ import (
 )
 
 const (
-	serviceMangaFoxDomain     = "mangafox.me"
-	serviceMangaFoxPathMangas = "/manga"
+	serviceMangaFoxDomain = "mangafox.me"
 )
 
 var (
-	serviceMangaFoxUrlBase   *url.URL
-	serviceMangaFoxUrlMangas *url.URL
-
 	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
 	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
 	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
@@ -30,15 +26,6 @@ var (
 	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?)/.*$")
 	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
-
-func init() {
-	serviceMangaFoxUrlBase = new(url.URL)
-	serviceMangaFoxUrlBase.Scheme = "http"
-	serviceMangaFoxUrlBase.Host = serviceMangaFoxDomain
-
-	serviceMangaFoxUrlMangas = urlCopy(serviceMangaFoxUrlBase)
-	serviceMangaFoxUrlMangas.Path = serviceMangaFoxPathMangas
-}
 
 type MangaFoxService struct {
 	Md *MangaDownloader

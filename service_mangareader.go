@@ -11,13 +11,11 @@ import (
 
 const (
 	serviceMangaReaderDomain            = "www.mangareader.net"
-	serviceMangaReaderPathMangas        = "/alphabetical"
 	serviceMangaReaderChapterDigitCount = 4
 )
 
 var (
-	serviceMangaReaderUrlBase   *url.URL
-	serviceMangaReaderUrlMangas *url.URL
+	serviceMangaReaderUrlBase *url.URL
 
 	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
 	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
@@ -36,9 +34,6 @@ func init() {
 	serviceMangaReaderUrlBase = new(url.URL)
 	serviceMangaReaderUrlBase.Scheme = "http"
 	serviceMangaReaderUrlBase.Host = serviceMangaReaderDomain
-
-	serviceMangaReaderUrlMangas = urlCopy(serviceMangaReaderUrlBase)
-	serviceMangaReaderUrlMangas.Path = serviceMangaReaderPathMangas
 }
 
 type MangaReaderService struct {
