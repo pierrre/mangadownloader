@@ -12,15 +12,15 @@ const (
 )
 
 var (
-	serviceMangaHereHtmlSelectorIdentifyManga, _   = selector.Selector(".manga_detail")
-	serviceMangaHereHtmlSelectorIdentifyChapter, _ = selector.Selector("#viewer")
-	serviceMangaHereHtmlSelectorMangaName, _       = selector.Selector(".detail_list .title h3")
-	serviceMangaHereHtmlSelectorMangaChapters, _   = selector.Selector(".detail_list a")
-	serviceMangaHereHtmlSelectorChapterPages, _    = selector.Selector(".readpage_top .right option")
-	serviceMangaHereHtmlSelectorPageImage, _       = selector.Selector("#image")
+	serviceMangaHereHtmlSelectorMangaName, _     = selector.Selector(".detail_list .title h3")
+	serviceMangaHereHtmlSelectorMangaChapters, _ = selector.Selector(".detail_list a")
+	serviceMangaHereHtmlSelectorChapterPages, _  = selector.Selector(".readpage_top .right option")
+	serviceMangaHereHtmlSelectorPageImage, _     = selector.Selector("#image")
 
-	serviceMangaHereRegexpMangaName, _   = regexp.Compile("^Read (.*) Online$")
-	serviceMangaHereRegexpChapterName, _ = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
+	serviceMangaHereRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z_]+/?$")
+	serviceMangaHereRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z_]+/.+$")
+	serviceMangaHereRegexpMangaName, _       = regexp.Compile("^Read (.*) Online$")
+	serviceMangaHereRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
 )
 
 type MangaHereService struct {
@@ -36,27 +36,20 @@ func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 		return nil, errors.New("Not supported")
 	}
 
-	rootNode, err := service.Md.HttpGetHtml(u)
-	if err != nil {
-		return nil, err
-	}
-
-	identifyMangaNodes := serviceMangaHereHtmlSelectorIdentifyManga.Find(rootNode)
-	if len(identifyMangaNodes) == 1 {
-		manga := &Manga{
-			Url:     u,
-			Service: service,
-		}
-		return manga, nil
-	}
-
-	identifyChapterNodes := serviceMangaHereHtmlSelectorIdentifyChapter.Find(rootNode)
-	if len(identifyChapterNodes) == 1 {
+	if serviceMangaHereRegexpIdentifyChapter.MatchString(u.Path) {
 		chapter := &Chapter{
 			Url:     u,
 			Service: service,
 		}
 		return chapter, nil
+	}
+
+	if serviceMangaHereRegexpIdentifyManga.MatchString(u.Path) {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
 	}
 
 	return nil, errors.New("Unknown url")
