@@ -15,14 +15,14 @@ const (
 )
 
 var (
-	serviceMangaFoxHtmlSelectorIdentifyManga, _   = selector.Selector("#chapters")
-	serviceMangaFoxHtmlSelectorIdentifyChapter, _ = selector.Selector("#top_chapter_list")
-	serviceMangaFoxHtmlSelectorMangaName, _       = selector.Selector("#series_info div.cover img")
-	serviceMangaFoxHtmlSelectorMangaChapters1, _  = selector.Selector("#chapters ul.chlist li h3 a")
-	serviceMangaFoxHtmlSelectorMangaChapters2, _  = selector.Selector("#chapters ul.chlist li h4 a")
-	serviceMangaFoxHtmlSelectorChapterPages, _    = selector.Selector("#top_center_bar div.r option")
-	serviceMangaFoxHtmlSelectorPageImage, _       = selector.Selector("#image")
+	serviceMangaFoxHtmlSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
+	serviceMangaFoxHtmlSelectorMangaChapters1, _ = selector.Selector("#chapters ul.chlist li h3 a")
+	serviceMangaFoxHtmlSelectorMangaChapters2, _ = selector.Selector("#chapters ul.chlist li h4 a")
+	serviceMangaFoxHtmlSelectorChapterPages, _   = selector.Selector("#top_center_bar div.r option")
+	serviceMangaFoxHtmlSelectorPageImage, _      = selector.Selector("#image")
 
+	serviceMangaFoxRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z_]+/?$")
+	serviceMangaFoxRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z_]+/.+$")
 	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
 	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
@@ -40,27 +40,20 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 		return nil, errors.New("Not supported")
 	}
 
-	rootNode, err := service.Md.HttpGetHtml(u)
-	if err != nil {
-		return nil, err
-	}
-
-	identifyMangaNodes := serviceMangaFoxHtmlSelectorIdentifyManga.Find(rootNode)
-	if len(identifyMangaNodes) == 1 {
-		manga := &Manga{
-			Url:     u,
-			Service: service,
-		}
-		return manga, nil
-	}
-
-	identifyChapterNodes := serviceMangaFoxHtmlSelectorIdentifyChapter.Find(rootNode)
-	if len(identifyChapterNodes) == 1 {
+	if serviceMangaFoxRegexpIdentifyChapter.MatchString(u.Path) {
 		chapter := &Chapter{
 			Url:     u,
 			Service: service,
 		}
 		return chapter, nil
+	}
+
+	if serviceMangaFoxRegexpIdentifyManga.MatchString(u.Path) {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
 	}
 
 	return nil, errors.New("Unknown url")
