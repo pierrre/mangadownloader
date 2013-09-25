@@ -19,6 +19,7 @@ var (
 
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
+	serviceMangaWallRegexpChapterName, _     = regexp.Compile("^/manga/[0-9a-z\\-]+/([0-9\\.\\-]+).*$")
 )
 
 func init() {
@@ -98,7 +99,13 @@ func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error)
 }
 
 func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
-	return "", errors.New("Not implemented")
+	matches := serviceMangaWallRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
+	if matches == nil {
+		return "", errors.New("Invalid name format")
+	}
+	name := matches[1]
+
+	return name, nil
 }
 
 func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error) {
