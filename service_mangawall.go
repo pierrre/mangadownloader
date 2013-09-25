@@ -12,11 +12,20 @@ const (
 )
 
 var (
-	serviceMangaWallHtmlSelectorMangaName, _ = selector.Selector("meta[name=og:title]")
+	serviceMangaWallUrlBase *url.URL
+
+	serviceMangaWallHtmlSelectorMangaName, _     = selector.Selector("meta[name=og:title]")
+	serviceMangaWallHtmlSelectorMangaChapters, _ = selector.Selector(".chapterlistfull a")
 
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
 )
+
+func init() {
+	serviceMangaWallUrlBase = new(url.URL)
+	serviceMangaWallUrlBase.Scheme = "http"
+	serviceMangaWallUrlBase.Host = serviceMangaWallDomain
+}
 
 type MangaWallService struct {
 	Md *MangaDownloader
@@ -67,7 +76,25 @@ func (service *MangaWallService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	return nil, errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	linkNodes := serviceMangaWallHtmlSelectorMangaChapters.Find(rootNode)
+
+	chapters := make([]*Chapter, 0, len(linkNodes))
+	for _, linkNode := range linkNodes {
+		chapterUrl := urlCopy(serviceMangaWallUrlBase)
+		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
+		chapter := &Chapter{
+			Url:     chapterUrl,
+			Service: service,
+		}
+		chapters = append(chapters, chapter)
+	}
+
+	return chapters, nil
 }
 
 func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
