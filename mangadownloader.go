@@ -57,6 +57,10 @@ func CreateDefaultMangeDownloader() *MangaDownloader {
 		Md: md,
 	}
 
+	md.Services["mangawall"] = &MangaWallService{
+		Md: md,
+	}
+
 	return md
 }
 
