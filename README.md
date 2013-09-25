@@ -62,6 +62,7 @@ or
     - mangastream
     - fakku
     - doujin-moe
+- Fix download freeze
 - Tests
 - Documentation
 - Sync
