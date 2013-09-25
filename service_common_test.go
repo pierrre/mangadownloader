@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL) {
+func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, expectedMangaName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(mangaUrl)
@@ -22,8 +22,8 @@ func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(name) == 0 {
-		t.Fatal("Empty name")
+	if name != expectedMangaName {
+		t.Fatal("Unexpected name")
 	}
 
 	chapters, err := manga.Chapters()
@@ -35,7 +35,7 @@ func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL) {
 	}
 }
 
-func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL) {
+func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL, expectedChapterName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(chapterUrl)
@@ -52,8 +52,8 @@ func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(name) == 0 {
-		t.Fatal("Empty name")
+	if name != expectedChapterName {
+		t.Fatal("Unexpected name")
 	}
 
 	pages, err := chapter.Pages()

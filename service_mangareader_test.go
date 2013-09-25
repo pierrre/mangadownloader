@@ -20,11 +20,11 @@ func getTestMangaReaderService() *MangaReaderService {
 func TestMangaReaderServiceManga(t *testing.T) {
 	service := getTestMangaReaderService()
 
-	testCommonServiceManga(t, service, serviceMangReaderTestUrlManga)
+	testCommonServiceManga(t, service, serviceMangReaderTestUrlManga, "Gantz")
 }
 
 func TestMangaReaderServiceChapter(t *testing.T) {
 	service := getTestMangaReaderService()
 
-	testCommonServiceChapter(t, service, serviceMangReaderTestUrlChapter)
+	testCommonServiceChapter(t, service, serviceMangReaderTestUrlChapter, "0058")
 }

@@ -20,11 +20,11 @@ func getTestMangaWallService() *MangaWallService {
 func TestMangaWallServiceManga(t *testing.T) {
 	service := getTestMangaWallService()
 
-	testCommonServiceManga(t, service, serviceMangWallTestUrlManga)
+	testCommonServiceManga(t, service, serviceMangWallTestUrlManga, "Nozoki Ana")
 }
 
 func TestMangaWallServiceChapter(t *testing.T) {
 	service := getTestMangaWallService()
 
-	testCommonServiceChapter(t, service, serviceMangWallTestUrlChapter)
+	testCommonServiceChapter(t, service, serviceMangWallTestUrlChapter, "6")
 }

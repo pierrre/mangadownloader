@@ -20,11 +20,11 @@ func getTestMangaHereService() *MangaHereService {
 func TestMangaHereServiceManga(t *testing.T) {
 	service := getTestMangaHereService()
 
-	testCommonServiceManga(t, service, serviceMangaHereTestUrlManga)
+	testCommonServiceManga(t, service, serviceMangaHereTestUrlManga, "Aku No Hana")
 }
 
 func TestMangaHereServiceChapter(t *testing.T) {
 	service := getTestMangaHereService()
 
-	testCommonServiceChapter(t, service, serviceMangaHereTestUrlChapter)
+	testCommonServiceChapter(t, service, serviceMangaHereTestUrlChapter, "012")
 }
