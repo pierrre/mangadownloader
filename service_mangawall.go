@@ -1,7 +1,7 @@
 package mangadownloader
 
 import (
-	//"code.google.com/p/go-html-transform/css/selector"
+	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
 	"regexp"
@@ -12,6 +12,8 @@ const (
 )
 
 var (
+	serviceMangaWallHtmlSelectorMangaName, _ = selector.Selector("meta[name=og:title]")
+
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
 )
@@ -49,7 +51,19 @@ func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaWallService) MangaName(manga *Manga) (string, error) {
-	return "", errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return "", err
+	}
+
+	metaOgTitleNodes := serviceMangaWallHtmlSelectorMangaName.Find(rootNode)
+	if len(metaOgTitleNodes) != 1 {
+		return "", errors.New("Name node not found")
+	}
+	metaOgTitleNode := metaOgTitleNodes[0]
+	name := htmlGetNodeAttribute(metaOgTitleNode, "content")
+
+	return name, nil
 }
 
 func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error) {
