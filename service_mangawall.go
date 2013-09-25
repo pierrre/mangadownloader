@@ -14,12 +14,15 @@ const (
 var (
 	serviceMangaWallUrlBase *url.URL
 
-	serviceMangaWallHtmlSelectorMangaName, _     = selector.Selector("meta[name=og:title]")
-	serviceMangaWallHtmlSelectorMangaChapters, _ = selector.Selector(".chapterlistfull a")
+	serviceMangaWallHtmlSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
+	serviceMangaWallHtmlSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
+	serviceMangaWallHtmlSelectorChapterPagesSelect, _ = selector.Selector(".pageselect")
+	serviceMangaWallHtmlSelectorChapterPagesOption, _ = selector.Selector("option")
 
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
 	serviceMangaWallRegexpChapterName, _     = regexp.Compile("^/manga/[0-9a-z\\-]+/([0-9\\.\\-]+).*$")
+	serviceMangaWallRegexpPageBaseUrlPath, _ = regexp.Compile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
 )
 
 func init() {
@@ -109,6 +112,38 @@ func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error) {
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	selectNodes := serviceMangaWallHtmlSelectorChapterPagesSelect.Find(rootNode)
+	if len(selectNodes) != 2 {
+		return nil, errors.New("Select node not found")
+	}
+	selectNode := selectNodes[0]
+	optionNodes := serviceMangaWallHtmlSelectorChapterPagesOption.Find(selectNode)
+
+	matches := serviceMangaWallRegexpPageBaseUrlPath.FindStringSubmatch(chapter.Url.Path)
+	if matches == nil {
+		return nil, errors.New("Invalid path format")
+	}
+	pageBaseUrlPath := matches[1]
+
+	pageBaseUrl := urlCopy(serviceMangaWallUrlBase)
+	pageBaseUrl.Path = pageBaseUrlPath
+
+	pages := make([]*Page, 0, len(optionNodes))
+	for _, optionNode := range optionNodes {
+		pageUrl := urlCopy(pageBaseUrl)
+		pageUrl.Path += "/" + htmlGetNodeAttribute(optionNode, "value")
+		page := &Page{
+			Url:     pageUrl,
+			Service: service,
+		}
+		pages = append(pages, page)
+	}
+
 	return nil, errors.New("Not implemented")
 }
 

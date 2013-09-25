@@ -7,7 +7,7 @@ import (
 
 var (
 	serviceMangWallTestUrlManga, _   = url.Parse("http://mangawall.com/manga/nozoki-ana")
-	serviceMangWallTestUrlChapter, _ = url.Parse("http://mangawall.com/manga/nozoki-ana/112")
+	serviceMangWallTestUrlChapter, _ = url.Parse("http://mangawall.com/manga/nozoki-ana/6")
 )
 
 func getTestMangaWallService() *MangaWallService {
