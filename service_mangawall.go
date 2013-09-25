@@ -18,6 +18,7 @@ var (
 	serviceMangaWallHtmlSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
 	serviceMangaWallHtmlSelectorChapterPagesSelect, _ = selector.Selector(".pageselect")
 	serviceMangaWallHtmlSelectorChapterPagesOption, _ = selector.Selector("option")
+	serviceMangaWallHtmlSelectorPageImage, _          = selector.Selector(".scan")
 
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
@@ -144,11 +145,27 @@ func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error)
 		pages = append(pages, page)
 	}
 
-	return nil, errors.New("Not implemented")
+	return pages, nil
 }
 
 func (service *MangaWallService) PageImageUrl(page *Page) (*url.URL, error) {
-	return nil, errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	imgNodes := serviceMangaWallHtmlSelectorPageImage.Find(rootNode)
+	if len(imgNodes) != 1 {
+		return nil, errors.New("Image node not found")
+	}
+	imgNode := imgNodes[0]
+
+	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	if err != nil {
+		return nil, err
+	}
+
+	return imageUrl, nil
 }
 
 func (service *MangaWallService) String() string {
