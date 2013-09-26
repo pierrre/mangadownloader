@@ -19,6 +19,7 @@ var (
 	serviceTenMangaHtmlSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
 	serviceTenMangaHtmlSelectorChapterNameTitle, _ = selector.Selector("title")
 	serviceTenMangaHtmlSelectorChapterNameManga, _ = selector.Selector(".postion a")
+	serviceTenMangaHtmlSelectorChapterPages, _     = selector.Selector("#page option")
 
 	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
 	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
@@ -144,7 +145,26 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	return nil, errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	pageNodes := serviceTenMangaHtmlSelectorChapterPages.Find(rootNode)
+	pages := make([]*Page, 0, len(pageNodes))
+	for _, pageNode := range pageNodes {
+		pageUrl, err := url.Parse(htmlGetNodeAttribute(pageNode, "value"))
+		if err != nil {
+			return nil, err
+		}
+		page := &Page{
+			Url:     pageUrl,
+			Service: service,
+		}
+		pages = append(pages, page)
+	}
+
+	return pages, nil
 }
 
 func (service *TenMangaService) PageImageUrl(page *Page) (*url.URL, error) {
