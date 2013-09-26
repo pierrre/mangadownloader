@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -14,11 +15,14 @@ const (
 var (
 	serviceTenMangaUrlBase *url.URL
 
-	serviceTenMangaHtmlSelectorMangaName, _     = selector.Selector(".postion .red")
-	serviceTenMangaHtmlSelectorMangaChapters, _ = selector.Selector(".chapter_list td[align=left] a")
+	serviceTenMangaHtmlSelectorMangaName, _        = selector.Selector(".postion .red")
+	serviceTenMangaHtmlSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
+	serviceTenMangaHtmlSelectorChapterNameTitle, _ = selector.Selector("title")
+	serviceTenMangaHtmlSelectorChapterNameManga, _ = selector.Selector(".postion a")
 
 	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
 	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
+	serviceTenMangaRegexpChapterName, _     = regexp.Compile("^(.+) Page \\d+$")
 )
 
 func init() {
@@ -103,7 +107,40 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
-	return "", errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	if err != nil {
+		return "", err
+	}
+
+	mangaNameNodes := serviceTenMangaHtmlSelectorChapterNameManga.Find(rootNode)
+	if len(mangaNameNodes) != 2 {
+		return "", errors.New("Manga name node not found")
+	}
+	mangaNameNode := mangaNameNodes[1]
+	mangaName, err := htmlGetNodeText(mangaNameNode)
+	if err != nil {
+		return "", err
+	}
+
+	titleNodes := serviceTenMangaHtmlSelectorChapterNameTitle.Find(rootNode)
+	if len(titleNodes) != 1 {
+		return "", errors.New("Title node not found")
+	}
+	titleNode := titleNodes[0]
+	title, err := htmlGetNodeText(titleNode)
+	if err != nil {
+		return "", err
+	}
+
+	matches := serviceTenMangaRegexpChapterName.FindStringSubmatch(title)
+	if matches == nil {
+		return "", errors.New("Invalid title format")
+	}
+	name := matches[1]
+	name = strings.TrimPrefix(name, mangaName)
+	name = strings.TrimSpace(name)
+
+	return name, nil
 }
 
 func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) {
