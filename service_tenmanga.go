@@ -4,11 +4,16 @@ import (
 	//"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
-	//"regexp"
+	"regexp"
 )
 
 const (
 	serviceTenMangaDomain = "www.tenmanga.com"
+)
+
+var (
+	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
+	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
 )
 
 type TenMangaService struct {
@@ -20,7 +25,27 @@ func (service *TenMangaService) Supports(u *url.URL) bool {
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
-	return nil, errors.New("Not implemented")
+	if !service.Supports(u) {
+		return nil, errors.New("Not supported")
+	}
+
+	if serviceTenMangaRegexpIdentifyManga.MatchString(u.Path) {
+		manga := &Manga{
+			Url:     u,
+			Service: service,
+		}
+		return manga, nil
+	}
+
+	if serviceTenMangaRegexpIdentifyChapter.MatchString(u.Path) {
+		chapter := &Chapter{
+			Url:     u,
+			Service: service,
+		}
+		return chapter, nil
+	}
+
+	return nil, errors.New("Unknown url")
 }
 
 func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
