@@ -183,11 +183,16 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options
 
 	if options.Cbz {
 		outCbz := getCbzPath(out)
-		err = zip.ArchiveFile(out+string(filepath.Separator), outCbz, nil)
+		outCbzTmp := outCbz + ".tmp"
+		err = zip.ArchiveFile(out+string(filepath.Separator), outCbzTmp, nil)
 		if err != nil {
 			return err
 		}
 		err = os.RemoveAll(out)
+		if err != nil {
+			return err
+		}
+		err = os.Rename(outCbzTmp, outCbz)
 		if err != nil {
 			return err
 		}
