@@ -61,6 +61,10 @@ func CreateDefaultMangeDownloader() *MangaDownloader {
 		Md: md,
 	}
 
+	md.Services["tenmanga"] = &TenMangaService{
+		Md: md,
+	}
+
 	return md
 }
 
