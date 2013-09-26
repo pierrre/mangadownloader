@@ -1,7 +1,7 @@
 package mangadownloader
 
 import (
-	//"code.google.com/p/go-html-transform/css/selector"
+	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
 	"regexp"
@@ -12,6 +12,8 @@ const (
 )
 
 var (
+	serviceTenMangaHtmlSelectorMangaName, _ = selector.Selector(".postion .red")
+
 	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
 	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
 )
@@ -49,7 +51,23 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
-	return "", errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return "", err
+	}
+
+	nameNodes := serviceTenMangaHtmlSelectorMangaName.Find(rootNode)
+	if len(nameNodes) != 2 {
+		return "", errors.New("Name node not found")
+	}
+	nameNode := nameNodes[1]
+	if nameNode.FirstChild == nil {
+		return "", errors.New("Name text node not found")
+	}
+	nameTextNode := nameNode.FirstChild
+	name := nameTextNode.Data
+
+	return name, nil
 }
 
 func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) {
