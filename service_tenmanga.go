@@ -12,11 +12,20 @@ const (
 )
 
 var (
-	serviceTenMangaHtmlSelectorMangaName, _ = selector.Selector(".postion .red")
+	serviceTenMangaUrlBase *url.URL
+
+	serviceTenMangaHtmlSelectorMangaName, _     = selector.Selector(".postion .red")
+	serviceTenMangaHtmlSelectorMangaChapters, _ = selector.Selector(".chapter_list td[align=left] a")
 
 	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
 	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
 )
+
+func init() {
+	serviceTenMangaUrlBase = new(url.URL)
+	serviceTenMangaUrlBase.Scheme = "http"
+	serviceTenMangaUrlBase.Host = serviceTenMangaDomain
+}
 
 type TenMangaService struct {
 	Md *MangaDownloader
@@ -71,7 +80,26 @@ func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	return nil, errors.New("Not implemented")
+	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	linkNodes := serviceTenMangaHtmlSelectorMangaChapters.Find(rootNode)
+	chapterCount := len(linkNodes)
+	chapters := make([]*Chapter, 0, chapterCount)
+	for i := chapterCount - 1; i >= 0; i-- {
+		linkNode := linkNodes[i]
+		chapterUrl := urlCopy(serviceTenMangaUrlBase)
+		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
+		chapter := &Chapter{
+			Url:     chapterUrl,
+			Service: service,
+		}
+		chapters = append(chapters, chapter)
+	}
+
+	return chapters, nil
 }
 
 func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
