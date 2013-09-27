@@ -146,21 +146,23 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options
 	if err != nil {
 		return err
 	}
-
 	out = filepath.Join(out, cleanFilename(name))
-	var outFinal string
+
 	if options.Cbz {
-		outFinal = getCbzPath(out)
+		return md.downloadChapterCbz(chapter, out, options)
 	} else {
-		outFinal = out
+		return md.downloadChapter(chapter, out, options)
 	}
-	if fileExists(outFinal) {
+}
+
+func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options *Options) error {
+	if fileExists(out) {
 		return nil
 	}
 
 	outTmp := out + ".tmp"
 	if fileExists(outTmp) {
-		err = os.RemoveAll(outTmp)
+		err := os.RemoveAll(outTmp)
 		if err != nil {
 			return err
 		}
@@ -181,21 +183,41 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options
 		return err
 	}
 
-	if options.Cbz {
-		outCbz := getCbzPath(out)
-		outCbzTmp := outCbz + ".tmp"
-		err = zip.ArchiveFile(out+string(filepath.Separator), outCbzTmp, nil)
+	return nil
+}
+
+func (md *MangaDownloader) downloadChapterCbz(chapter *Chapter, out string, options *Options) error {
+	outCbz := out + ".cbz"
+	if fileExists(outCbz) {
+		return nil
+	}
+
+	outCbzTmp := outCbz + ".tmp"
+	if fileExists(outCbzTmp) {
+		err := os.RemoveAll(outCbzTmp)
 		if err != nil {
 			return err
 		}
-		err = os.RemoveAll(out)
-		if err != nil {
-			return err
-		}
-		err = os.Rename(outCbzTmp, outCbz)
-		if err != nil {
-			return err
-		}
+	}
+
+	err := md.downloadChapter(chapter, out, options)
+	if err != nil {
+		return err
+	}
+
+	err = zip.ArchiveFile(out+string(filepath.Separator), outCbzTmp, nil)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(outCbzTmp, outCbz)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(out)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -340,8 +362,4 @@ type Options struct {
 
 func cleanFilename(name string) string {
 	return filenameCleanReplacer.Replace(name)
-}
-
-func getCbzPath(filePath string) string {
-	return filePath + ".cbz"
 }
