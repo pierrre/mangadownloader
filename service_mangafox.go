@@ -125,7 +125,7 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 		return nil, err
 	}
 
-	println(chapter.Url)
+	println(chapter.Url.String())
 
 	buffer := new(bytes.Buffer)
 	html.Render(buffer, rootNode)
