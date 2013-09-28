@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	serviceMangaFoxTestUrlManga, _   = url.Parse("http://mangafox.me/manga/naruto/")
-	serviceMangaFoxTestUrlChapter, _ = url.Parse("http://mangafox.me/manga/naruto/v63/c600/1.html")
+	serviceMangaFoxTestUrlManga, _   = url.Parse("http://mangafox.me/manga/berserk/")
+	serviceMangaFoxTestUrlChapter, _ = url.Parse("http://mangafox.me/manga/berserk/c134/1.html")
 )
 
 func getTestMangaFoxService() *MangaFoxService {
@@ -20,11 +20,11 @@ func getTestMangaFoxService() *MangaFoxService {
 func TestMangaFoxServiceManga(t *testing.T) {
 	service := getTestMangaFoxService()
 
-	testCommonServiceManga(t, service, serviceMangaFoxTestUrlManga, "Naruto")
+	testCommonServiceManga(t, service, serviceMangaFoxTestUrlManga, "Berserk")
 }
 
 func TestMangaFoxServiceChapter(t *testing.T) {
 	service := getTestMangaFoxService()
 
-	testCommonServiceChapter(t, service, serviceMangaFoxTestUrlChapter, "600")
+	testCommonServiceChapter(t, service, serviceMangaFoxTestUrlChapter, "134")
 }
