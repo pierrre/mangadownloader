@@ -1,6 +1,7 @@
 package mangadownloader
 
 import (
+	"bytes"
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
 	"errors"
@@ -123,6 +124,10 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	buffer := new(bytes.Buffer)
+	html.Render(buffer, rootNode)
+	println(buffer.String())
 
 	basePageUrl := urlCopy(chapter.Url)
 	basePageUrl.Path = serviceMangaFoxRegexpPageBaseUrlPath.ReplaceAllString(basePageUrl.Path, "")
