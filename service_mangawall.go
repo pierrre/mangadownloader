@@ -7,11 +7,12 @@ import (
 	"regexp"
 )
 
-const (
-	serviceMangaWallDomain = "mangawall.com"
-)
-
 var (
+	serviceMangaWallHosts = []string{
+		"mangawall.com",
+		"www.mangawall.com",
+	}
+
 	serviceMangaWallUrlBase *url.URL
 
 	serviceMangaWallHtmlSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
@@ -29,7 +30,7 @@ var (
 func init() {
 	serviceMangaWallUrlBase = new(url.URL)
 	serviceMangaWallUrlBase.Scheme = "http"
-	serviceMangaWallUrlBase.Host = serviceMangaWallDomain
+	serviceMangaWallUrlBase.Host = serviceMangaWallHosts[0]
 }
 
 type MangaWallService struct {
@@ -37,7 +38,7 @@ type MangaWallService struct {
 }
 
 func (service *MangaWallService) Supports(u *url.URL) bool {
-	return u.Host == serviceMangaWallDomain
+	return sliceStringContains(serviceMangaWallHosts, u.Host)
 }
 
 func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {

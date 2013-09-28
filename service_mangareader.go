@@ -10,11 +10,15 @@ import (
 )
 
 const (
-	serviceMangaReaderDomain            = "www.mangareader.net"
 	serviceMangaReaderChapterDigitCount = 4
 )
 
 var (
+	serviceMangaReaderHosts = []string{
+		"www.mangareader.net",
+		"mangareader.net",
+	}
+
 	serviceMangaReaderUrlBase *url.URL
 
 	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
@@ -33,7 +37,7 @@ var (
 func init() {
 	serviceMangaReaderUrlBase = new(url.URL)
 	serviceMangaReaderUrlBase.Scheme = "http"
-	serviceMangaReaderUrlBase.Host = serviceMangaReaderDomain
+	serviceMangaReaderUrlBase.Host = serviceMangaReaderHosts[0]
 }
 
 type MangaReaderService struct {
@@ -41,7 +45,7 @@ type MangaReaderService struct {
 }
 
 func (service *MangaReaderService) Supports(u *url.URL) bool {
-	return u.Host == serviceMangaReaderDomain
+	return sliceStringContains(serviceMangaReaderHosts, u.Host)
 }
 
 func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {

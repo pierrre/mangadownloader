@@ -7,11 +7,12 @@ import (
 	"regexp"
 )
 
-const (
-	serviceMangaHereDomain = "www.mangahere.com"
-)
-
 var (
+	serviceMangaHereHosts = []string{
+		"www.mangahere.com",
+		"mangahere.com",
+	}
+
 	serviceMangaHereHtmlSelectorMangaName, _     = selector.Selector(".detail_list .title h3")
 	serviceMangaHereHtmlSelectorMangaChapters, _ = selector.Selector(".detail_list a")
 	serviceMangaHereHtmlSelectorChapterPages, _  = selector.Selector(".readpage_top .right option")
@@ -28,7 +29,7 @@ type MangaHereService struct {
 }
 
 func (service *MangaHereService) Supports(u *url.URL) bool {
-	return u.Host == serviceMangaHereDomain
+	return sliceStringContains(serviceMangaHereHosts, u.Host)
 }
 
 func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {

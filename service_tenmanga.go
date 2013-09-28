@@ -8,11 +8,12 @@ import (
 	"strings"
 )
 
-const (
-	serviceTenMangaDomain = "www.tenmanga.com"
-)
-
 var (
+	serviceTenMangaHosts = []string{
+		"www.tenmanga.com",
+		"tenmanga.com",
+	}
+
 	serviceTenMangaUrlBase *url.URL
 
 	serviceTenMangaHtmlSelectorMangaName, _        = selector.Selector(".postion .red")
@@ -30,7 +31,7 @@ var (
 func init() {
 	serviceTenMangaUrlBase = new(url.URL)
 	serviceTenMangaUrlBase.Scheme = "http"
-	serviceTenMangaUrlBase.Host = serviceTenMangaDomain
+	serviceTenMangaUrlBase.Host = serviceTenMangaHosts[0]
 }
 
 type TenMangaService struct {
@@ -38,7 +39,7 @@ type TenMangaService struct {
 }
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
-	return u.Host == serviceTenMangaDomain
+	return sliceStringContains(serviceTenMangaHosts, u.Host)
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {

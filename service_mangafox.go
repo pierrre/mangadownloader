@@ -10,11 +10,12 @@ import (
 	"strconv"
 )
 
-const (
-	serviceMangaFoxDomain = "mangafox.me"
-)
-
 var (
+	serviceMangaFoxHosts = []string{
+		"mangafox.me",
+		"beta.mangafox.com",
+	}
+
 	serviceMangaFoxHtmlSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
 	serviceMangaFoxHtmlSelectorMangaChapters1, _ = selector.Selector("#chapters ul.chlist li h3 a")
 	serviceMangaFoxHtmlSelectorMangaChapters2, _ = selector.Selector("#chapters ul.chlist li h4 a")
@@ -32,7 +33,7 @@ type MangaFoxService struct {
 }
 
 func (service *MangaFoxService) Supports(u *url.URL) bool {
-	return u.Host == serviceMangaFoxDomain
+	return sliceStringContains(serviceMangaFoxHosts, u.Host)
 }
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {

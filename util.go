@@ -47,3 +47,12 @@ func fileExists(file string) bool {
 	_, err := os.Stat(file)
 	return err == nil
 }
+
+func sliceStringContains(haystack []string, needle string) bool {
+	for _, s := range haystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
+}
