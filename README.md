@@ -60,8 +60,6 @@ or
     - mangable
     - deliciousmanga
     - mangastream
-    - fakku
-    - doujin-moe
 - Fix download freeze
 - Tests
 - Documentation
