@@ -327,6 +327,12 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string,
 }
 
 func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
+	request, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
+
 	httpRetry := md.HttpRetry
 	if httpRetry < 1 {
 		httpRetry = 1
@@ -334,7 +340,7 @@ func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err err
 
 	errs := make(MultiError, 0)
 	for i := 0; i < httpRetry; i++ {
-		response, err := http.Get(u.String())
+		response, err := http.DefaultClient.Do(request)
 		if err == nil {
 			return response, nil
 		}
