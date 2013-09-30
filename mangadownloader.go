@@ -331,7 +331,6 @@ func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err err
 	if err != nil {
 		return nil, err
 	}
-
 	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
 
 	httpRetry := md.HttpRetry
