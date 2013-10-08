@@ -3,6 +3,7 @@ package mangadownloader
 import (
 	"bytes"
 	"code.google.com/p/go.net/html"
+	"errors"
 	"net/url"
 	"os"
 )
@@ -17,9 +18,10 @@ func htmlGetNodeAttribute(node *html.Node, key string) string {
 }
 
 func htmlGetNodeText(node *html.Node) (string, error) {
-	if node.Type == html.TextNode {
+	switch node.Type {
+	case html.TextNode:
 		return node.Data, nil
-	} else {
+	case html.DocumentNode, html.ElementNode:
 		buffer := new(bytes.Buffer)
 		childNode := node.FirstChild
 		for childNode != nil {
@@ -34,6 +36,14 @@ func htmlGetNodeText(node *html.Node) (string, error) {
 			childNode = childNode.NextSibling
 		}
 		return buffer.String(), nil
+	case html.CommentNode:
+		return "", nil
+	case html.DoctypeNode:
+		return "", nil
+	case html.ErrorNode:
+		return "", nil
+	default:
+		return "", errors.New("invalid html node type")
 	}
 }
 
