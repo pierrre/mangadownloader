@@ -64,7 +64,7 @@ func main() {
 				panic(err)
 			}
 		default:
-			panic(errors.New("Not supported"))
+			panic(errors.New("not supported"))
 		}
 	}
 }

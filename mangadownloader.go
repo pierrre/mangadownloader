@@ -2,7 +2,6 @@ package mangadownloader
 
 import (
 	"code.google.com/p/go.net/html"
-	"errors"
 	"fmt"
 	"github.com/pierrre/archivefile/zip"
 	"io/ioutil"
@@ -75,7 +74,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 		}
 	}
 
-	return nil, errors.New("Unsupported url")
+	return nil, fmt.Errorf("url \"%s\" is not supported by any service", u)
 }
 
 func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Options) error {
