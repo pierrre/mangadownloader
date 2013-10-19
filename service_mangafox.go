@@ -70,6 +70,7 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaFoxHtmlSelectorMangaName, manga.Url)
 	}
 	nameNode := nameNodes[0]
+
 	name := htmlGetNodeAttribute(nameNode, "alt")
 
 	return name, nil
@@ -91,6 +92,7 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 		if err != nil {
 			return nil, err
 		}
+
 		chapter := &Chapter{
 			Url:     chapterUrl,
 			Service: service,
@@ -135,11 +137,14 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 		if err != nil {
 			return nil, err
 		}
+
 		if pageNumber <= 0 {
 			continue
 		}
+
 		pageUrl := urlCopy(basePageUrl)
 		pageUrl.Path += fmt.Sprintf("/%d.html", pageNumber)
+
 		page := &Page{
 			Url:     pageUrl,
 			Service: service,
