@@ -138,7 +138,7 @@ func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error)
 	nameTextNode := nameNode.FirstChild
 	name := nameTextNode.Data
 	matches := serviceMangaReaderRegexpChapterName.FindStringSubmatch(name)
-	if matches == nil || len(matches) != 2 {
+	if matches == nil {
 		return "", errors.New("Invalid name format")
 	}
 	name = matches[1]

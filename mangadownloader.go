@@ -301,7 +301,7 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string,
 		contentType := response.Header.Get("content-type")
 		if len(contentType) > 0 {
 			matches := regexpImageContentType.FindStringSubmatch(contentType)
-			if matches != nil && len(matches) == 2 {
+			if matches != nil {
 				extension = matches[1]
 			}
 		}
