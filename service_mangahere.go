@@ -2,7 +2,7 @@ package mangadownloader
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
-	"errors"
+	"fmt"
 	"net/url"
 	"regexp"
 )
@@ -34,7 +34,7 @@ func (service *MangaHereService) Supports(u *url.URL) bool {
 
 func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 	if !service.Supports(u) {
-		return nil, errors.New("Not supported")
+		return nil, fmt.Errorf("url '%s' not supported", u)
 	}
 
 	if serviceMangaHereRegexpIdentifyChapter.MatchString(u.Path) {
@@ -53,7 +53,7 @@ func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 		return manga, nil
 	}
 
-	return nil, errors.New("Unknown url")
+	return nil, fmt.Errorf("url '%s' unknown", u)
 }
 
 func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
@@ -64,17 +64,18 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 
 	nameNodes := serviceMangaHereHtmlSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
-		return "", errors.New("Name node not found")
+		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaHereHtmlSelectorMangaName, manga.Url)
 	}
 	nameNode := nameNodes[0]
-	if nameNode.FirstChild == nil {
-		return "", errors.New("Name text node not found")
+
+	name, err := htmlGetNodeText(nameNode)
+	if err != nil {
+		return "", err
 	}
-	nameTextNode := nameNode.FirstChild
-	name := nameTextNode.Data
+
 	matches := serviceMangaHereRegexpMangaName.FindStringSubmatch(name)
-	if matches == nil || len(matches) != 2 {
-		return "", errors.New("Invalid name format")
+	if matches == nil {
+		return "", fmt.Errorf("regexp '%s' (manga name) not found in '%s'", serviceMangaHereRegexpMangaName, name)
 	}
 	name = matches[1]
 
@@ -113,7 +114,7 @@ func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error)
 func (service *MangaHereService) ChapterName(chapter *Chapter) (string, error) {
 	matches := serviceMangaHereRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
 	if matches == nil {
-		return "", errors.New("Invalid name format")
+		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaHereRegexpChapterName, chapter.Url)
 	}
 	name := matches[1]
 
@@ -152,7 +153,7 @@ func (service *MangaHereService) PageImageUrl(page *Page) (*url.URL, error) {
 
 	imgNodes := serviceMangaHereHtmlSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
-		return nil, errors.New("Image node not found")
+		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaHereHtmlSelectorPageImage, page.Url)
 	}
 	imgNode := imgNodes[0]
 
