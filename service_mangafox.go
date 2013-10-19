@@ -3,7 +3,6 @@ package mangadownloader
 import (
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
-	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -38,7 +37,7 @@ func (service *MangaFoxService) Supports(u *url.URL) bool {
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 	if !service.Supports(u) {
-		return nil, errors.New("Not supported")
+		return nil, fmt.Errorf("url '%s' not supported", u)
 	}
 
 	if serviceMangaFoxRegexpIdentifyChapter.MatchString(u.Path) {
@@ -57,7 +56,7 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 		return manga, nil
 	}
 
-	return nil, errors.New("Unknown url")
+	return nil, fmt.Errorf("url '%s' unknown", u)
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
@@ -68,7 +67,7 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 
 	nameNodes := serviceMangaFoxHtmlSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
-		return "", errors.New("Name node not found")
+		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaFoxHtmlSelectorMangaName, manga.Url)
 	}
 	nameNode := nameNodes[0]
 	name := htmlGetNodeAttribute(nameNode, "alt")
@@ -111,7 +110,7 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 	matches := serviceMangaFoxRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
 	if matches == nil {
-		return "", errors.New("Invalid name format")
+		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaFoxRegexpChapterName, chapter.Url)
 	}
 	name := matches[1]
 
@@ -159,7 +158,7 @@ func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
 
 	imgNodes := serviceMangaFoxHtmlSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
-		return nil, errors.New("Image node not found")
+		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaFoxHtmlSelectorPageImage, page.Url)
 	}
 	imgNode := imgNodes[0]
 

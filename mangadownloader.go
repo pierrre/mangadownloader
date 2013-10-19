@@ -74,7 +74,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("url \"%s\" is not supported by any service", u)
+	return nil, fmt.Errorf("url '%s' not supported by any service", u)
 }
 
 func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Options) error {
