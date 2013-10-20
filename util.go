@@ -66,3 +66,12 @@ func sliceStringContains(haystack []string, needle string) bool {
 	}
 	return false
 }
+
+func chapterSliceReverse(chapters []*Chapter) []*Chapter {
+	count := len(chapters)
+	reversed := make([]*Chapter, 0, count)
+	for i := count - 1; i >= 0; i-- {
+		reversed = append(reversed, chapters[i])
+	}
+	return reversed
+}

@@ -89,7 +89,7 @@ func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error)
 	}
 
 	linkNodes := serviceMangaHereHtmlSelectorMangaChapters.Find(rootNode)
-	chaptersReversed := make([]*Chapter, 0, len(linkNodes))
+	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
 		chapterUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
 		if err != nil {
@@ -99,14 +99,9 @@ func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error)
 			Url:     chapterUrl,
 			Service: service,
 		}
-		chaptersReversed = append(chaptersReversed, chapter)
+		chapters = append(chapters, chapter)
 	}
-
-	chapterCount := len(chaptersReversed)
-	chapters := make([]*Chapter, 0, chapterCount)
-	for i := chapterCount - 1; i >= 0; i-- {
-		chapters = append(chapters, chaptersReversed[i])
-	}
+	chapters = chapterSliceReverse(chapters)
 
 	return chapters, nil
 }
