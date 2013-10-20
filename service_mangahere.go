@@ -29,7 +29,7 @@ type MangaHereService struct {
 }
 
 func (service *MangaHereService) Supports(u *url.URL) bool {
-	return sliceStringContains(serviceMangaHereHosts, u.Host)
+	return stringSliceContains(serviceMangaHereHosts, u.Host)
 }
 
 func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {

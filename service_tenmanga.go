@@ -39,7 +39,7 @@ type TenMangaService struct {
 }
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
-	return sliceStringContains(serviceTenMangaHosts, u.Host)
+	return stringSliceContains(serviceTenMangaHosts, u.Host)
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {

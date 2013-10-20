@@ -45,7 +45,7 @@ type MangaReaderService struct {
 }
 
 func (service *MangaReaderService) Supports(u *url.URL) bool {
-	return sliceStringContains(serviceMangaReaderHosts, u.Host)
+	return stringSliceContains(serviceMangaReaderHosts, u.Host)
 }
 
 func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {

@@ -32,7 +32,7 @@ type MangaFoxService struct {
 }
 
 func (service *MangaFoxService) Supports(u *url.URL) bool {
-	return sliceStringContains(serviceMangaFoxHosts, u.Host)
+	return stringSliceContains(serviceMangaFoxHosts, u.Host)
 }
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {

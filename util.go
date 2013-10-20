@@ -58,7 +58,7 @@ func fileExists(file string) bool {
 	return err == nil
 }
 
-func sliceStringContains(haystack []string, needle string) bool {
+func stringSliceContains(haystack []string, needle string) bool {
 	for _, s := range haystack {
 		if s == needle {
 			return true

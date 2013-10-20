@@ -38,7 +38,7 @@ type MangaWallService struct {
 }
 
 func (service *MangaWallService) Supports(u *url.URL) bool {
-	return sliceStringContains(serviceMangaWallHosts, u.Host)
+	return stringSliceContains(serviceMangaWallHosts, u.Host)
 }
 
 func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
