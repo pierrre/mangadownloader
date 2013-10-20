@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/pierrre/mangadownloader"
 	"log"
 	"net"
 	"net/http"
@@ -13,6 +14,14 @@ import (
 const (
 	HTTP_ADDR_DEFAULT = "localhost:0"
 )
+
+var (
+	md *mangadownloader.MangaDownloader
+)
+
+func init() {
+	md = mangadownloader.CreateDefaultMangeDownloader()
+}
 
 func main() {
 	httpAddrFlag := flag.String("http", HTTP_ADDR_DEFAULT, "Http")
@@ -39,6 +48,9 @@ func main() {
 		}
 	}
 
+	http.HandleFunc("/", httpHandleIndex)
+	http.HandleFunc("/add", httpHandleAdd)
+
 	err = http.Serve(listener, nil)
 	if err != nil {
 		panic(err)
@@ -57,4 +69,71 @@ func openUrl(u *url.URL) error {
 		command = exec.Command("xdg-open", us)
 	}
 	return command.Run()
+}
+
+func httpHandleIndex(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		writer.WriteHeader(http.StatusMethodNotAllowed)
+		writer.Write([]byte(http.StatusText(http.StatusMethodNotAllowed)))
+		return
+	}
+
+	writer.Write([]byte(`<html>
+	<head>
+		<title>Manga Downloader</title>
+	</head>
+	<body>
+		<form action="/add" method="post">
+			<input type="text" name="url"><br />
+			<input type="submit" value="Download">
+		</form>
+	</body>
+</html>`))
+}
+
+func httpHandleAdd(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		writer.WriteHeader(http.StatusMethodNotAllowed)
+		writer.Write([]byte(http.StatusText(http.StatusMethodNotAllowed)))
+		return
+	}
+
+	err := request.ParseForm()
+	if err != nil {
+		httpError(writer, err)
+		return
+	}
+
+	u, err := url.Parse(request.FormValue("url"))
+	if err != nil {
+		httpError(writer, err)
+		return
+	}
+
+	go func() {
+		o, err := md.Identify(u)
+		if err != nil {
+			return
+		}
+		options := &mangadownloader.Options{
+			Cbz:             true,
+			PageDigitCount:  4,
+			ParallelChapter: 4,
+			ParallelPage:    8,
+		}
+		out := ""
+		switch object := o.(type) {
+		case *mangadownloader.Manga:
+			md.DownloadManga(object, out, options)
+		case *mangadownloader.Chapter:
+			md.DownloadChapter(object, out, options)
+		case *mangadownloader.Page:
+			md.DownloadPage(object, out, "image", options)
+		}
+	}()
+}
+
+func httpError(writer http.ResponseWriter, err error) {
+	writer.WriteHeader(http.StatusInternalServerError)
+	writer.Write([]byte(err.Error()))
 }

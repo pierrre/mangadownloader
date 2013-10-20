@@ -44,6 +44,8 @@ func NewMangaDownloader() *MangaDownloader {
 func CreateDefaultMangeDownloader() *MangaDownloader {
 	md := NewMangaDownloader()
 
+	md.HttpRetry = 5
+
 	md.Services["mangafox"] = &MangaFoxService{
 		Md: md,
 	}
