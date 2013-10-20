@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	HTTP_ADDR_DEFAULT = ":0"
+	HTTP_ADDR_DEFAULT = "localhost:0"
 )
 
 func main() {
@@ -46,18 +46,15 @@ func main() {
 }
 
 func openUrl(u *url.URL) error {
-	commandName := openUrlCommandName()
-	command := exec.Command(commandName, u.String())
-	return command.Run()
-}
-
-func openUrlCommandName() string {
+	us := u.String()
+	var command *exec.Cmd
 	switch runtime.GOOS {
 	case "darwin":
-		return "open"
+		command = exec.Command("open", us)
 	case "windows":
-		return "start"
+		command = exec.Command("cmd", "/c", "start", us)
 	default:
-		return "xdg-open"
+		command = exec.Command("xdg-open", us)
 	}
+	return command.Run()
 }
