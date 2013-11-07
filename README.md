@@ -36,6 +36,9 @@ Examples:
 ./mangadownloader http://mangafox.me/manga/berserk/c134/1.html
 ```
 
+## Status
+[![Build Status](https://travis-ci.org/pierrre/mangadownloader.png?branch=master)](https://travis-ci.org/pierrre/mangadownloader)
+
 ## Build
 `go build mangadownloader/mangadownloader.go`
 
