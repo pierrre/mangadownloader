@@ -6,7 +6,7 @@ import (
 )
 
 func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, expectedMangaName string) {
-	t.Parallel()
+	//t.Parallel()
 
 	object, err := service.Identify(mangaUrl)
 	if err != nil {
@@ -36,7 +36,7 @@ func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, ex
 }
 
 func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL, expectedChapterName string) {
-	t.Parallel()
+	//t.Parallel()
 
 	object, err := service.Identify(chapterUrl)
 	if err != nil {
