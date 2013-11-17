@@ -2,7 +2,7 @@ language: go
 
 go:
   - 1.1.2
-  - 1.2rc3
+  - 1.2rc4
   - tip
 
 script: go test -v -short ./...
