@@ -1,4 +1,4 @@
-// +build darwin freebsd linux netbsd openbsd
+// +build darwin freebsd linux netbsd openbsd plan9
 
 package mangadownloader
 
