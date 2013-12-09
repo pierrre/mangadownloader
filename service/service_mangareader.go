@@ -1,4 +1,4 @@
-package mangadownloader
+package service
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
@@ -10,16 +10,16 @@ import (
 )
 
 const (
-	serviceMangaReaderChapterDigitCount = 4
+	serviceMangaReadeChapterDigitCount = 4
 )
 
 var (
-	serviceMangaReaderHosts = []string{
-		"www.mangareader.net",
-		"mangareader.net",
+	mangareader = &MangaReaderService{
+		Hosts: []string{
+			"www.mangareader.net",
+			"mangareader.net",
+		},
 	}
-
-	serviceMangaReaderUrlBase *url.URL
 
 	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
 	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
@@ -31,21 +31,25 @@ var (
 
 	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* (\\d*)$")
 
-	serviceMangaReaderFormatChapter = "%0" + strconv.Itoa(serviceMangaReaderChapterDigitCount) + "d"
+	serviceMangaReaderFormatChapter = "%0" + strconv.Itoa(serviceMangaReadeChapterDigitCount) + "d"
 )
 
 func init() {
-	serviceMangaReaderUrlBase = new(url.URL)
-	serviceMangaReaderUrlBase.Scheme = "http"
-	serviceMangaReaderUrlBase.Host = serviceMangaReaderHosts[0]
+	mangareader.UrlBase = new(url.URL)
+	mangareader.UrlBase.Scheme = "http"
+	mangareader.UrlBase.Host = mangareader.Hosts[0]
+
+	RegisterService("mangareader", mangareader)
 }
 
-type MangaReaderService struct {
-	Md *MangaDownloader
+type MangaReaderService Service
+
+func init() {
+	RegisterService("mangareader", mangareader)
 }
 
 func (service *MangaReaderService) Supports(u *url.URL) bool {
-	return stringSliceContains(serviceMangaReaderHosts, u.Host)
+	return stringSliceContains(mangareader.Hosts, u.Host)
 }
 
 func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
@@ -53,7 +57,7 @@ func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
 		return nil, errors.New("Not supported")
 	}
 
-	rootNode, err := service.Md.HttpGetHtml(u)
+	rootNode, err := HttpGetHtml(u, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +84,7 @@ func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -100,7 +104,7 @@ func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +113,7 @@ func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, erro
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl := urlCopy(serviceMangaReaderUrlBase)
+		chapterUrl := urlCopy(mangareader.UrlBase)
 		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
 			Url:     chapterUrl,
@@ -122,7 +126,7 @@ func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, erro
 }
 
 func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -152,7 +156,7 @@ func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error)
 }
 
 func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +165,7 @@ func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, erro
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageUrl := urlCopy(serviceMangaReaderUrlBase)
+		pageUrl := urlCopy(mangareader.UrlBase)
 		pageUrl.Path = htmlGetNodeAttribute(optionNode, "value")
 		page := &Page{
 			Url:     pageUrl,
@@ -174,7 +178,7 @@ func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, erro
 }
 
 func (service *MangaReaderService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}

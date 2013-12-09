@@ -1,11 +1,11 @@
-package mangadownloader
+package service
 
 import (
 	"net/url"
 	"testing"
 )
 
-func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, expectedMangaName string) {
+func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaUrl *url.URL, expectedMangaName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(mangaUrl)

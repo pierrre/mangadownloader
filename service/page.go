@@ -1,4 +1,4 @@
-package mangadownloader
+package service
 
 import (
 	"net/url"
@@ -6,7 +6,7 @@ import (
 
 type Page struct {
 	Url     *url.URL
-	Service Service
+	Service ServiceHandler
 }
 
 func (page *Page) ImageUrl() (*url.URL, error) {

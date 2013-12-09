@@ -1,4 +1,4 @@
-package mangadownloader
+package service
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
@@ -8,9 +8,11 @@ import (
 )
 
 var (
-	serviceMangaHereHosts = []string{
-		"www.mangahere.com",
-		"mangahere.com",
+	mangahere = &MangaHereService{
+		Hosts: []string{
+			"www.mangareader.net",
+			"mangareader.net",
+		},
 	}
 
 	serviceMangaHereHtmlSelectorMangaName, _     = selector.Selector(".detail_list .title h3")
@@ -24,12 +26,14 @@ var (
 	serviceMangaHereRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
 )
 
-type MangaHereService struct {
-	Md *MangaDownloader
+type MangaHereService Service
+
+func init() {
+	RegisterService("mangahere", mangahere)
 }
 
 func (service *MangaHereService) Supports(u *url.URL) bool {
-	return stringSliceContains(serviceMangaHereHosts, u.Host)
+	return stringSliceContains(mangahere.Hosts, u.Host)
 }
 
 func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
@@ -57,7 +61,7 @@ func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +87,7 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +121,7 @@ func (service *MangaHereService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +145,7 @@ func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error)
 }
 
 func (service *MangaHereService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}

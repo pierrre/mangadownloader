@@ -1,14 +1,46 @@
-package mangadownloader
+package service
 
 import (
-	"github.com/matrixik/mangadownloader/service"
-
 	"bytes"
 	"code.google.com/p/go.net/html"
 	"errors"
+	"net/http"
 	"net/url"
 	"os"
 )
+
+func HttpGetHtml(u *url.URL, HttpRetry int) (*html.Node, error) {
+	response, err := HttpGet(u, HttpRetry)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	node, err := html.Parse(response.Body)
+	return node, err
+}
+
+func HttpGet(u *url.URL, HttpRetry int) (response *http.Response, err error) {
+	request, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
+
+	httpRetry := HttpRetry
+	if httpRetry < 1 {
+		httpRetry = 1
+	}
+
+	errs := make(MultiError, 0)
+	for i := 0; i < httpRetry; i++ {
+		response, err := http.DefaultClient.Do(request)
+		if err == nil {
+			return response, nil
+		}
+		errs = append(errs, err)
+	}
+	return nil, errs
+}
 
 func htmlGetNodeAttribute(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
@@ -69,9 +101,9 @@ func stringSliceContains(haystack []string, needle string) bool {
 	return false
 }
 
-func chapterSliceReverse(chapters []*service.Chapter) []*service.Chapter {
+func chapterSliceReverse(chapters []*Chapter) []*Chapter {
 	count := len(chapters)
-	reversed := make([]*service.Chapter, 0, count)
+	reversed := make([]*Chapter, 0, count)
 	for i := count - 1; i >= 0; i-- {
 		reversed = append(reversed, chapters[i])
 	}

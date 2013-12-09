@@ -1,4 +1,4 @@
-package mangadownloader
+package service
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
@@ -10,9 +10,11 @@ import (
 )
 
 var (
-	serviceMangaFoxHosts = []string{
-		"mangafox.me",
-		"beta.mangafox.com",
+	mangafox = &MangaFoxService{
+		Hosts: []string{
+			"mangafox.me",
+			"beta.mangafox.com",
+		},
 	}
 
 	serviceMangaFoxHtmlSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
@@ -27,12 +29,14 @@ var (
 	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
 
-type MangaFoxService struct {
-	Md *MangaDownloader
+type MangaFoxService Service
+
+func init() {
+	RegisterService("mangafox", mangafox)
 }
 
 func (service *MangaFoxService) Supports(u *url.URL) bool {
-	return stringSliceContains(serviceMangaFoxHosts, u.Host)
+	return stringSliceContains(mangafox.Hosts, u.Host)
 }
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
@@ -60,7 +64,7 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +81,7 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +119,7 @@ func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +155,7 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 }
 
 func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}

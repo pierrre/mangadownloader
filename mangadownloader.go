@@ -1,11 +1,11 @@
 package mangadownloader
 
 import (
-	"code.google.com/p/go.net/html"
+	"github.com/matrixik/mangadownloader/service"
+
 	"fmt"
 	"github.com/pierrre/archivefile/zip"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -30,41 +30,24 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services  map[string]Service
-	HttpRetry int
+	Services service.Services
 }
 
 func NewMangaDownloader() *MangaDownloader {
 	md := new(MangaDownloader)
-	md.Services = make(map[string]Service)
+	md.Services = make(service.Services)
 
 	return md
 }
 
 func CreateDefaultMangeDownloader() *MangaDownloader {
-	md := NewMangaDownloader()
+	md := new(MangaDownloader)
 
-	md.HttpRetry = 5
-
-	md.Services["mangafox"] = &MangaFoxService{
-		Md: md,
-	}
-
-	md.Services["mangahere"] = &MangaHereService{
-		Md: md,
-	}
-
-	md.Services["mangareader"] = &MangaReaderService{
-		Md: md,
-	}
-
-	md.Services["mangawall"] = &MangaWallService{
-		Md: md,
-	}
-
-	md.Services["tenmanga"] = &TenMangaService{
-		Md: md,
-	}
+	//for name, _ := range md.Services {
+	//	md.Services[name].{
+	//	HttpRetry: 5,
+	//	}
+	//}
 
 	return md
 }
@@ -79,7 +62,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 	return nil, fmt.Errorf("url '%s' not supported by any service", u)
 }
 
-func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Options) error {
+func (md *MangaDownloader) DownloadManga(manga *service.Manga, out string, options *Options) error {
 	name, err := manga.Name()
 	if err != nil {
 		return err
@@ -100,8 +83,8 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Opti
 	return nil
 }
 
-func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, options *Options) error {
-	work := make(chan *Chapter)
+func (md *MangaDownloader) downloadChapters(chapters []*service.Chapter, out string, options *Options) error {
+	work := make(chan *service.Chapter)
 	go func() {
 		for _, chapter := range chapters {
 			work <- chapter
@@ -129,7 +112,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, opt
 		close(result)
 	}()
 
-	errs := make(MultiError, 0)
+	errs := make(service.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -142,7 +125,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, opt
 	return nil
 }
 
-func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options *Options) error {
+func (md *MangaDownloader) DownloadChapter(chapter *service.Chapter, out string, options *Options) error {
 	name, err := chapter.Name()
 	if err != nil {
 		return err
@@ -156,7 +139,7 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options
 	}
 }
 
-func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options *Options) error {
+func (md *MangaDownloader) downloadChapter(chapter *service.Chapter, out string, options *Options) error {
 	if fileExists(out) {
 		return nil
 	}
@@ -187,7 +170,7 @@ func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options
 	return nil
 }
 
-func (md *MangaDownloader) downloadChapterCbz(chapter *Chapter, out string, options *Options) error {
+func (md *MangaDownloader) downloadChapterCbz(chapter *service.Chapter, out string, options *Options) error {
 	outCbz := out + ".cbz"
 	if fileExists(outCbz) {
 		return nil
@@ -224,9 +207,9 @@ func (md *MangaDownloader) downloadChapterCbz(chapter *Chapter, out string, opti
 	return nil
 }
 
-func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Options) error {
+func (md *MangaDownloader) downloadPages(pages []*service.Page, out string, options *Options) error {
 	type pageWork struct {
-		page  *Page
+		page  *service.Page
 		index int
 	}
 
@@ -261,7 +244,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Opt
 		close(result)
 	}()
 
-	errs := make(MultiError, 0)
+	errs := make(service.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -274,13 +257,13 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Opt
 	return nil
 }
 
-func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index int, options *Options) error {
+func (md *MangaDownloader) downloadPageWithIndex(page *service.Page, out string, index int, options *Options) error {
 	filenameFormat := "%0" + strconv.Itoa(options.PageDigitCount) + "d"
 	filename := fmt.Sprintf(filenameFormat, index+1)
 	return md.DownloadPage(page, out, filename, options)
 }
 
-func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string, options *Options) error {
+func (md *MangaDownloader) DownloadPage(page *service.Page, out string, filename string, options *Options) error {
 	out = filepath.Join(out, filename)
 
 	imageUrl, err := page.ImageUrl()
@@ -288,7 +271,7 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string,
 		return err
 	}
 
-	response, err := md.HttpGet(imageUrl)
+	response, err := service.HttpGet(imageUrl, 5)
 	if err != nil {
 		return err
 	}
@@ -325,39 +308,6 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string,
 	}
 
 	return nil
-}
-
-func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
-	request, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
-
-	httpRetry := md.HttpRetry
-	if httpRetry < 1 {
-		httpRetry = 1
-	}
-
-	errs := make(MultiError, 0)
-	for i := 0; i < httpRetry; i++ {
-		response, err := http.DefaultClient.Do(request)
-		if err == nil {
-			return response, nil
-		}
-		errs = append(errs, err)
-	}
-	return nil, errs
-}
-
-func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
-	response, err := md.HttpGet(u)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	node, err := html.Parse(response.Body)
-	return node, err
 }
 
 type Options struct {

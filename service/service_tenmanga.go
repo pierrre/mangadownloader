@@ -1,4 +1,4 @@
-package mangadownloader
+package service
 
 import (
 	"code.google.com/p/go-html-transform/css/selector"
@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	serviceTenMangaHosts = []string{
-		"www.tenmanga.com",
-		"tenmanga.com",
+	tenmanga = &TenMangaService{
+		Hosts: []string{
+			"www.tenmanga.com",
+			"tenmanga.com",
+		},
 	}
-
-	serviceTenMangaUrlBase *url.URL
 
 	serviceTenMangaHtmlSelectorMangaName, _        = selector.Selector(".postion .red")
 	serviceTenMangaHtmlSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
@@ -29,17 +29,17 @@ var (
 )
 
 func init() {
-	serviceTenMangaUrlBase = new(url.URL)
-	serviceTenMangaUrlBase.Scheme = "http"
-	serviceTenMangaUrlBase.Host = serviceTenMangaHosts[0]
+	tenmanga.UrlBase = new(url.URL)
+	tenmanga.UrlBase.Scheme = "http"
+	tenmanga.UrlBase.Host = tenmanga.Hosts[0]
+
+	RegisterService("tenmanga", tenmanga)
 }
 
-type TenMangaService struct {
-	Md *MangaDownloader
-}
+type TenMangaService Service
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
-	return stringSliceContains(serviceTenMangaHosts, u.Host)
+	return stringSliceContains(tenmanga.Hosts, u.Host)
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
@@ -67,7 +67,7 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +87,7 @@ func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 	chapters := make([]*Chapter, 0, chapterCount)
 	for i := chapterCount - 1; i >= 0; i-- {
 		linkNode := linkNodes[i]
-		chapterUrl := urlCopy(serviceTenMangaUrlBase)
+		chapterUrl := urlCopy(tenmanga.UrlBase)
 		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
 			Url:     chapterUrl,
@@ -110,7 +110,7 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +147,7 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 }
 
 func (service *TenMangaService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
 	if err != nil {
 		return nil, err
 	}
