@@ -9,8 +9,8 @@ import (
 	"os"
 )
 
-func HttpGetHtml(u *url.URL, HttpRetry int) (*html.Node, error) {
-	response, err := HttpGet(u, HttpRetry)
+func HTTPGetHTML(u *url.URL, HTTPRetry int) (*html.Node, error) {
+	response, err := HTTPGet(u, HTTPRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -19,14 +19,14 @@ func HttpGetHtml(u *url.URL, HttpRetry int) (*html.Node, error) {
 	return node, err
 }
 
-func HttpGet(u *url.URL, HttpRetry int) (response *http.Response, err error) {
+func HTTPGet(u *url.URL, HTTPRetry int) (response *http.Response, err error) {
 	request, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
 
-	httpRetry := HttpRetry
+	httpRetry := HTTPRetry
 	if httpRetry < 1 {
 		httpRetry = 1
 	}
@@ -42,7 +42,7 @@ func HttpGet(u *url.URL, HttpRetry int) (response *http.Response, err error) {
 	return nil, errs
 }
 
-func HtmlGetNodeAttribute(node *html.Node, key string) string {
+func HTMLGetNodeAttribute(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == key {
 			return attr.Val
@@ -51,7 +51,7 @@ func HtmlGetNodeAttribute(node *html.Node, key string) string {
 	return ""
 }
 
-func HtmlGetNodeText(node *html.Node) (string, error) {
+func HTMLGetNodeText(node *html.Node) (string, error) {
 	switch node.Type {
 	case html.TextNode:
 		return node.Data, nil
@@ -59,7 +59,7 @@ func HtmlGetNodeText(node *html.Node) (string, error) {
 		buffer := new(bytes.Buffer)
 		childNode := node.FirstChild
 		for childNode != nil {
-			text, err := HtmlGetNodeText(childNode)
+			text, err := HTMLGetNodeText(childNode)
 			if err != nil {
 				return "", err
 			}
@@ -81,7 +81,7 @@ func HtmlGetNodeText(node *html.Node) (string, error) {
 	}
 }
 
-func UrlCopy(u *url.URL) *url.URL {
+func URLCopy(u *url.URL) *url.URL {
 	urlCopyVal := *u
 	urlCopy := &urlCopyVal
 	return urlCopy

@@ -17,22 +17,22 @@ var (
 		},
 	}
 
-	serviceMangaWallHtmlSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
-	serviceMangaWallHtmlSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
-	serviceMangaWallHtmlSelectorChapterPagesSelect, _ = selector.Selector(".pageselect")
-	serviceMangaWallHtmlSelectorChapterPagesOption, _ = selector.Selector("option")
-	serviceMangaWallHtmlSelectorPageImage, _          = selector.Selector(".scan")
+	serviceMangaWallHTMLSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
+	serviceMangaWallHTMLSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
+	serviceMangaWallHTMLSelectorChapterPagesSelect, _ = selector.Selector(".pageselect")
+	serviceMangaWallHTMLSelectorChapterPagesOption, _ = selector.Selector("option")
+	serviceMangaWallHTMLSelectorPageImage, _          = selector.Selector(".scan")
 
 	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
 	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
 	serviceMangaWallRegexpChapterName, _     = regexp.Compile("^/manga/[0-9a-z\\-]+/([0-9\\.\\-]+).*$")
-	serviceMangaWallRegexpPageBaseUrlPath, _ = regexp.Compile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
+	serviceMangaWallRegexpPageBaseURLPath, _ = regexp.Compile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
 )
 
 func init() {
-	mangawall.UrlBase = new(url.URL)
-	mangawall.UrlBase.Scheme = "http"
-	mangawall.UrlBase.Host = mangawall.Hosts[0]
+	mangawall.URLBase = new(url.URL)
+	mangawall.URLBase.Scheme = "http"
+	mangawall.URLBase.Host = mangawall.Hosts[0]
 
 	RegisterService("mangawall", mangawall)
 }
@@ -50,7 +50,7 @@ func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceMangaWallRegexpIdentifyChapter.MatchString(u.Path) {
 		chapter := &Chapter{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return chapter, nil
@@ -58,7 +58,7 @@ func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceMangaWallRegexpIdentifyManga.MatchString(u.Path) {
 		manga := &Manga{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return manga, nil
@@ -68,35 +68,35 @@ func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaWallService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	metaOgTitleNodes := serviceMangaWallHtmlSelectorMangaName.Find(rootNode)
+	metaOgTitleNodes := serviceMangaWallHTMLSelectorMangaName.Find(rootNode)
 	if len(metaOgTitleNodes) != 1 {
 		return "", errors.New("Name node not found")
 	}
 	metaOgTitleNode := metaOgTitleNodes[0]
-	name := utils.HtmlGetNodeAttribute(metaOgTitleNode, "content")
+	name := utils.HTMLGetNodeAttribute(metaOgTitleNode, "content")
 
 	return name, nil
 }
 
 func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	linkNodes := serviceMangaWallHtmlSelectorMangaChapters.Find(rootNode)
+	linkNodes := serviceMangaWallHTMLSelectorMangaChapters.Find(rootNode)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl := utils.UrlCopy(mangawall.UrlBase)
-		chapterUrl.Path = utils.HtmlGetNodeAttribute(linkNode, "href")
+		chapterURL := utils.URLCopy(mangawall.URLBase)
+		chapterURL.Path = utils.HTMLGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
-			Url:     chapterUrl,
+			URL:     chapterURL,
 			Service: service,
 		}
 		chapters = append(chapters, chapter)
@@ -106,7 +106,7 @@ func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error)
 }
 
 func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
-	matches := serviceMangaWallRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
+	matches := serviceMangaWallRegexpChapterName.FindStringSubmatch(chapter.URL.Path)
 	if matches == nil {
 		return "", errors.New("Invalid name format")
 	}
@@ -116,33 +116,33 @@ func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	selectNodes := serviceMangaWallHtmlSelectorChapterPagesSelect.Find(rootNode)
+	selectNodes := serviceMangaWallHTMLSelectorChapterPagesSelect.Find(rootNode)
 	if len(selectNodes) != 2 {
 		return nil, errors.New("Select node not found")
 	}
 	selectNode := selectNodes[0]
-	optionNodes := serviceMangaWallHtmlSelectorChapterPagesOption.Find(selectNode)
+	optionNodes := serviceMangaWallHTMLSelectorChapterPagesOption.Find(selectNode)
 
-	matches := serviceMangaWallRegexpPageBaseUrlPath.FindStringSubmatch(chapter.Url.Path)
+	matches := serviceMangaWallRegexpPageBaseURLPath.FindStringSubmatch(chapter.URL.Path)
 	if matches == nil {
 		return nil, errors.New("Invalid path format")
 	}
-	pageBaseUrlPath := matches[1]
+	pageBaseURLPath := matches[1]
 
-	pageBaseUrl := utils.UrlCopy(mangawall.UrlBase)
-	pageBaseUrl.Path = pageBaseUrlPath
+	pageBaseURL := utils.URLCopy(mangawall.URLBase)
+	pageBaseURL.Path = pageBaseURLPath
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageUrl := utils.UrlCopy(pageBaseUrl)
-		pageUrl.Path += "/" + utils.HtmlGetNodeAttribute(optionNode, "value")
+		pageURL := utils.URLCopy(pageBaseURL)
+		pageURL.Path += "/" + utils.HTMLGetNodeAttribute(optionNode, "value")
 		page := &Page{
-			Url:     pageUrl,
+			URL:     pageURL,
 			Service: service,
 		}
 		pages = append(pages, page)
@@ -151,30 +151,30 @@ func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error)
 	return pages, nil
 }
 
-func (service *MangaWallService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
+func (service *MangaWallService) PageImageURL(page *Page) (*url.URL, error) {
+	rootNode, err := utils.HTTPGetHTML(page.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaWallHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := serviceMangaWallHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
 		return nil, errors.New("Image node not found")
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
+	imageURL, err := url.Parse(utils.HTMLGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
-	return imageUrl, nil
+	return imageURL, nil
 }
 
-func (service *MangaWallService) HttpRetry() int {
+func (service *MangaWallService) HTTPRetry() int {
 	return service.httpRetry
 }
-func (service *MangaWallService) SetHttpRetry(nr int) {
+func (service *MangaWallService) SetHTTPRetry(nr int) {
 	service.httpRetry = nr
 }
 

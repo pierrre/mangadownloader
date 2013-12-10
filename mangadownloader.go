@@ -31,7 +31,7 @@ func init() {
 }
 
 type MangaDownloader struct {
-	HttpRetry int
+	HTTPRetry int
 }
 
 func NewMangaDownloader() *MangaDownloader {
@@ -44,7 +44,7 @@ func CreateDefaultMangeDownloader() *MangaDownloader {
 	md := new(MangaDownloader)
 
 	for _, serviceStruct := range service.Services {
-		serviceStruct.SetHttpRetry(5)
+		serviceStruct.SetHTTPRetry(5)
 	}
 
 	return md
@@ -132,9 +132,8 @@ func (md *MangaDownloader) DownloadChapter(chapter *service.Chapter, out string,
 
 	if options.Cbz {
 		return md.downloadChapterCbz(chapter, out, options)
-	} else {
-		return md.downloadChapter(chapter, out, options)
 	}
+	return md.downloadChapter(chapter, out, options)
 }
 
 func (md *MangaDownloader) downloadChapter(chapter *service.Chapter, out string, options *Options) error {
@@ -264,12 +263,12 @@ func (md *MangaDownloader) downloadPageWithIndex(page *service.Page, out string,
 func (md *MangaDownloader) DownloadPage(page *service.Page, out string, filename string, options *Options) error {
 	out = filepath.Join(out, filename)
 
-	imageUrl, err := page.ImageUrl()
+	imageURL, err := page.ImageURL()
 	if err != nil {
 		return err
 	}
 
-	response, err := utils.HttpGet(imageUrl, 5)
+	response, err := utils.HTTPGet(imageURL, 5)
 	if err != nil {
 		return err
 	}

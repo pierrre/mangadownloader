@@ -5,10 +5,10 @@ import (
 	"testing"
 )
 
-func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaUrl *url.URL, expectedMangaName string) {
+func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaURL *url.URL, expectedMangaName string) {
 	//t.Parallel()
 
-	object, err := service.Identify(mangaUrl)
+	object, err := service.Identify(mangaURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,10 +35,10 @@ func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaUrl *url.
 	}
 }
 
-func testCommonServiceChapter(t *testing.T, service ServiceHandler, chapterUrl *url.URL, expectedChapterName string) {
+func testCommonServiceChapter(t *testing.T, service ServiceHandler, chapterURL *url.URL, expectedChapterName string) {
 	//t.Parallel()
 
-	object, err := service.Identify(chapterUrl)
+	object, err := service.Identify(chapterURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func testCommonServiceChapter(t *testing.T, service ServiceHandler, chapterUrl *
 	}
 
 	page := pages[0]
-	_, err = page.ImageUrl()
+	_, err = page.ImageURL()
 	if err != nil {
 		t.Fatal(err)
 	}

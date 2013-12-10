@@ -43,7 +43,7 @@ func main() {
 			Host:   listener.Addr().String(),
 		}
 
-		err = openUrl(u)
+		err = openURL(u)
 		if err != nil {
 			log.Println(err)
 			log.Printf("Open '%s' manually", u)
@@ -59,7 +59,7 @@ func main() {
 	}
 }
 
-func openUrl(u *url.URL) error {
+func openURL(u *url.URL) error {
 	us := u.String()
 	var command *exec.Cmd
 	switch runtime.GOOS {

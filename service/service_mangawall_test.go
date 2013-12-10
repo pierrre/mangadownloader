@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	serviceMangWallTestUrlManga, _   = url.Parse("http://mangawall.com/manga/nozoki-ana")
-	serviceMangWallTestUrlChapter, _ = url.Parse("http://mangawall.com/manga/nozoki-ana/6")
+	serviceMangWallTestURLManga, _   = url.Parse("http://mangawall.com/manga/nozoki-ana")
+	serviceMangWallTestURLChapter, _ = url.Parse("http://mangawall.com/manga/nozoki-ana/6")
 )
 
 func getTestMangaWallService() *MangaWallService {
@@ -20,11 +20,11 @@ func getTestMangaWallService() *MangaWallService {
 func TestMangaWallServiceManga(t *testing.T) {
 	service := getTestMangaWallService()
 
-	testCommonServiceManga(t, service, serviceMangWallTestUrlManga, "Nozoki Ana")
+	testCommonServiceManga(t, service, serviceMangWallTestURLManga, "Nozoki Ana")
 }
 
 func TestMangaWallServiceChapter(t *testing.T) {
 	service := getTestMangaWallService()
 
-	testCommonServiceChapter(t, service, serviceMangWallTestUrlChapter, "6")
+	testCommonServiceChapter(t, service, serviceMangWallTestURLChapter, "6")
 }

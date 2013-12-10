@@ -31,7 +31,7 @@ func main() {
 	}
 
 	md := mangadownloader.CreateDefaultMangeDownloader()
-	md.HttpRetry = *httpRetryFlag
+	md.HTTPRetry = *httpRetryFlag
 
 	options := &mangadownloader.Options{
 		Cbz:             *cbzFlag,

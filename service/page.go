@@ -5,10 +5,10 @@ import (
 )
 
 type Page struct {
-	Url     *url.URL
+	URL     *url.URL
 	Service ServiceHandler
 }
 
-func (page *Page) ImageUrl() (*url.URL, error) {
-	return page.Service.PageImageUrl(page)
+func (page *Page) ImageURL() (*url.URL, error) {
+	return page.Service.PageImageURL(page)
 }

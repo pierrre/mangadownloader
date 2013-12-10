@@ -6,7 +6,7 @@ import (
 
 type Service struct {
 	Hosts     []string
-	UrlBase   *url.URL
+	URLBase   *url.URL
 	httpRetry int
 }
 
@@ -17,10 +17,10 @@ type ServiceHandler interface {
 	MangaChapters(*Manga) ([]*Chapter, error)
 	ChapterName(*Chapter) (string, error)
 	ChapterPages(*Chapter) ([]*Page, error)
-	PageImageUrl(*Page) (*url.URL, error)
+	PageImageURL(*Page) (*url.URL, error)
 
-	HttpRetry() int
-	SetHttpRetry(int)
+	HTTPRetry() int
+	SetHTTPRetry(int)
 }
 
 var Services = map[string]ServiceHandler{}

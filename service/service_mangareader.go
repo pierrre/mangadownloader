@@ -23,13 +23,13 @@ var (
 		},
 	}
 
-	serviceMangaReaderHtmlSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
-	serviceMangaReaderHtmlSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
-	serviceMangaReaderHtmlSelectorMangaName, _       = selector.Selector("h2.aname")
-	serviceMangaReaderHtmlSelectorMangaChapters, _   = selector.Selector("#chapterlist a")
-	serviceMangaReaderHtmlSelectorChapterName, _     = selector.Selector("#mangainfo h1")
-	serviceMangaReaderHtmlSelectorChapterPages, _    = selector.Selector("#pageMenu option")
-	serviceMangaReaderHtmlSelectorPageImage, _       = selector.Selector("#img")
+	serviceMangaReaderHTMLSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
+	serviceMangaReaderHTMLSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
+	serviceMangaReaderHTMLSelectorMangaName, _       = selector.Selector("h2.aname")
+	serviceMangaReaderHTMLSelectorMangaChapters, _   = selector.Selector("#chapterlist a")
+	serviceMangaReaderHTMLSelectorChapterName, _     = selector.Selector("#mangainfo h1")
+	serviceMangaReaderHTMLSelectorChapterPages, _    = selector.Selector("#pageMenu option")
+	serviceMangaReaderHTMLSelectorPageImage, _       = selector.Selector("#img")
 
 	serviceMangaReaderRegexpChapterName, _ = regexp.Compile("^.* (\\d*)$")
 
@@ -37,9 +37,9 @@ var (
 )
 
 func init() {
-	mangareader.UrlBase = new(url.URL)
-	mangareader.UrlBase.Scheme = "http"
-	mangareader.UrlBase.Host = mangareader.Hosts[0]
+	mangareader.URLBase = new(url.URL)
+	mangareader.URLBase.Scheme = "http"
+	mangareader.URLBase.Host = mangareader.Hosts[0]
 
 	RegisterService("mangareader", mangareader)
 }
@@ -59,24 +59,24 @@ func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
 		return nil, errors.New("Not supported")
 	}
 
-	rootNode, err := utils.HttpGetHtml(u, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(u, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	identifyMangaNodes := serviceMangaReaderHtmlSelectorIdentifyManga.Find(rootNode)
+	identifyMangaNodes := serviceMangaReaderHTMLSelectorIdentifyManga.Find(rootNode)
 	if len(identifyMangaNodes) == 1 {
 		manga := &Manga{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return manga, nil
 	}
 
-	identifyChapterNodes := serviceMangaReaderHtmlSelectorIdentifyChapter.Find(rootNode)
+	identifyChapterNodes := serviceMangaReaderHTMLSelectorIdentifyChapter.Find(rootNode)
 	if len(identifyChapterNodes) == 1 {
 		chapter := &Chapter{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return chapter, nil
@@ -86,12 +86,12 @@ func (service *MangaReaderService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	nameNodes := serviceMangaReaderHtmlSelectorMangaName.Find(rootNode)
+	nameNodes := serviceMangaReaderHTMLSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
 		return "", errors.New("Name node not found")
 	}
@@ -106,19 +106,19 @@ func (service *MangaReaderService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	linkNodes := serviceMangaReaderHtmlSelectorMangaChapters.Find(rootNode)
+	linkNodes := serviceMangaReaderHTMLSelectorMangaChapters.Find(rootNode)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl := utils.UrlCopy(mangareader.UrlBase)
-		chapterUrl.Path = utils.HtmlGetNodeAttribute(linkNode, "href")
+		chapterURL := utils.URLCopy(mangareader.URLBase)
+		chapterURL.Path = utils.HTMLGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
-			Url:     chapterUrl,
+			URL:     chapterURL,
 			Service: service,
 		}
 		chapters = append(chapters, chapter)
@@ -128,12 +128,12 @@ func (service *MangaReaderService) MangaChapters(manga *Manga) ([]*Chapter, erro
 }
 
 func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error) {
-	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	nameNodes := serviceMangaReaderHtmlSelectorChapterName.Find(rootNode)
+	nameNodes := serviceMangaReaderHTMLSelectorChapterName.Find(rootNode)
 	if len(nameNodes) != 1 {
 		return "", errors.New("Name node not found")
 	}
@@ -158,19 +158,19 @@ func (service *MangaReaderService) ChapterName(chapter *Chapter) (string, error)
 }
 
 func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	optionNodes := serviceMangaReaderHtmlSelectorChapterPages.Find(rootNode)
+	optionNodes := serviceMangaReaderHTMLSelectorChapterPages.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageUrl := utils.UrlCopy(mangareader.UrlBase)
-		pageUrl.Path = utils.HtmlGetNodeAttribute(optionNode, "value")
+		pageURL := utils.URLCopy(mangareader.URLBase)
+		pageURL.Path = utils.HTMLGetNodeAttribute(optionNode, "value")
 		page := &Page{
-			Url:     pageUrl,
+			URL:     pageURL,
 			Service: service,
 		}
 		pages = append(pages, page)
@@ -179,30 +179,30 @@ func (service *MangaReaderService) ChapterPages(chapter *Chapter) ([]*Page, erro
 	return pages, nil
 }
 
-func (service *MangaReaderService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
+func (service *MangaReaderService) PageImageURL(page *Page) (*url.URL, error) {
+	rootNode, err := utils.HTTPGetHTML(page.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaReaderHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := serviceMangaReaderHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
 		return nil, errors.New("Image node not found")
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
+	imageURL, err := url.Parse(utils.HTMLGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
-	return imageUrl, nil
+	return imageURL, nil
 }
 
-func (service *MangaReaderService) HttpRetry() int {
+func (service *MangaReaderService) HTTPRetry() int {
 	return service.httpRetry
 }
-func (service *MangaReaderService) SetHttpRetry(nr int) {
+func (service *MangaReaderService) SetHTTPRetry(nr int) {
 	service.httpRetry = nr
 }
 

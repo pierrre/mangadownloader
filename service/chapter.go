@@ -5,7 +5,7 @@ import (
 )
 
 type Chapter struct {
-	Url     *url.URL
+	URL     *url.URL
 	Service ServiceHandler
 }
 

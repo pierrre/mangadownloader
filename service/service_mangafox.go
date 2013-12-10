@@ -19,16 +19,16 @@ var (
 		},
 	}
 
-	serviceMangaFoxHtmlSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
-	serviceMangaFoxHtmlSelectorMangaChapters1, _ = selector.Selector("#chapters ul.chlist li h3 a")
-	serviceMangaFoxHtmlSelectorMangaChapters2, _ = selector.Selector("#chapters ul.chlist li h4 a")
-	serviceMangaFoxHtmlSelectorChapterPages, _   = selector.Selector("#top_center_bar div.r option")
-	serviceMangaFoxHtmlSelectorPageImage, _      = selector.Selector("#image")
+	serviceMangaFoxHTMLSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
+	serviceMangaFoxHTMLSelectorMangaChapters1, _ = selector.Selector("#chapters ul.chlist li h3 a")
+	serviceMangaFoxHTMLSelectorMangaChapters2, _ = selector.Selector("#chapters ul.chlist li h4 a")
+	serviceMangaFoxHTMLSelectorChapterPages, _   = selector.Selector("#top_center_bar div.r option")
+	serviceMangaFoxHTMLSelectorPageImage, _      = selector.Selector("#image")
 
 	serviceMangaFoxRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z_]+/?$")
 	serviceMangaFoxRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z_]+/.+$")
 	serviceMangaFoxRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
-	serviceMangaFoxRegexpPageBaseUrlPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
+	serviceMangaFoxRegexpPageBaseURLPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
 
 type MangaFoxService Service
@@ -48,7 +48,7 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceMangaFoxRegexpIdentifyChapter.MatchString(u.Path) {
 		chapter := &Chapter{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return chapter, nil
@@ -56,7 +56,7 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceMangaFoxRegexpIdentifyManga.MatchString(u.Path) {
 		manga := &Manga{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return manga, nil
@@ -66,41 +66,41 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	nameNodes := serviceMangaFoxHtmlSelectorMangaName.Find(rootNode)
+	nameNodes := serviceMangaFoxHTMLSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
-		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaFoxHtmlSelectorMangaName, manga.Url)
+		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaFoxHTMLSelectorMangaName, manga.URL)
 	}
 	nameNode := nameNodes[0]
 
-	name := utils.HtmlGetNodeAttribute(nameNode, "alt")
+	name := utils.HTMLGetNodeAttribute(nameNode, "alt")
 
 	return name, nil
 }
 
 func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
 	linkNodes := make([]*html.Node, 0)
-	linkNodes = append(linkNodes, serviceMangaFoxHtmlSelectorMangaChapters1.Find(rootNode)...)
-	linkNodes = append(linkNodes, serviceMangaFoxHtmlSelectorMangaChapters2.Find(rootNode)...)
+	linkNodes = append(linkNodes, serviceMangaFoxHTMLSelectorMangaChapters1.Find(rootNode)...)
+	linkNodes = append(linkNodes, serviceMangaFoxHTMLSelectorMangaChapters2.Find(rootNode)...)
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl, err := url.Parse(utils.HtmlGetNodeAttribute(linkNode, "href"))
+		chapterURL, err := url.Parse(utils.HTMLGetNodeAttribute(linkNode, "href"))
 		if err != nil {
 			return nil, err
 		}
 
 		chapter := &Chapter{
-			Url:     chapterUrl,
+			URL:     chapterURL,
 			Service: service,
 		}
 		chapters = append(chapters, chapter)
@@ -111,9 +111,9 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
-	matches := serviceMangaFoxRegexpChapterName.FindStringSubmatch(chapter.Url.Path)
+	matches := serviceMangaFoxRegexpChapterName.FindStringSubmatch(chapter.URL.Path)
 	if matches == nil {
-		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaFoxRegexpChapterName, chapter.Url)
+		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaFoxRegexpChapterName, chapter.URL)
 	}
 	name := matches[1]
 
@@ -121,19 +121,19 @@ func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	basePageUrl := utils.UrlCopy(chapter.Url)
-	basePageUrl.Path = serviceMangaFoxRegexpPageBaseUrlPath.ReplaceAllString(basePageUrl.Path, "")
+	basePageURL := utils.URLCopy(chapter.URL)
+	basePageURL.Path = serviceMangaFoxRegexpPageBaseURLPath.ReplaceAllString(basePageURL.Path, "")
 
-	optionNodes := serviceMangaFoxHtmlSelectorChapterPages.Find(rootNode)
+	optionNodes := serviceMangaFoxHTMLSelectorChapterPages.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageNumberString := utils.HtmlGetNodeAttribute(optionNode, "value")
+		pageNumberString := utils.HTMLGetNodeAttribute(optionNode, "value")
 		pageNumber, err := strconv.Atoi(pageNumberString)
 		if err != nil {
 			return nil, err
@@ -143,11 +143,11 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 			continue
 		}
 
-		pageUrl := utils.UrlCopy(basePageUrl)
-		pageUrl.Path += fmt.Sprintf("/%d.html", pageNumber)
+		pageURL := utils.URLCopy(basePageURL)
+		pageURL.Path += fmt.Sprintf("/%d.html", pageNumber)
 
 		page := &Page{
-			Url:     pageUrl,
+			URL:     pageURL,
 			Service: service,
 		}
 		pages = append(pages, page)
@@ -156,30 +156,30 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 	return pages, nil
 }
 
-func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
+func (service *MangaFoxService) PageImageURL(page *Page) (*url.URL, error) {
+	rootNode, err := utils.HTTPGetHTML(page.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaFoxHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := serviceMangaFoxHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
-		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaFoxHtmlSelectorPageImage, page.Url)
+		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaFoxHTMLSelectorPageImage, page.URL)
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
+	imageURL, err := url.Parse(utils.HTMLGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
-	return imageUrl, nil
+	return imageURL, nil
 }
 
-func (service *MangaFoxService) HttpRetry() int {
+func (service *MangaFoxService) HTTPRetry() int {
 	return service.httpRetry
 }
-func (service *MangaFoxService) SetHttpRetry(nr int) {
+func (service *MangaFoxService) SetHTTPRetry(nr int) {
 	service.httpRetry = nr
 }
 
