@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/matrixik/mangadownloader"
+	"github.com/matrixik/mangadownloader/service"
+
 	"flag"
-	"github.com/pierrre/mangadownloader"
 	"log"
 	"net"
 	"net/http"
@@ -123,11 +125,11 @@ func httpHandleAdd(writer http.ResponseWriter, request *http.Request) {
 		}
 		out := ""
 		switch object := o.(type) {
-		case *mangadownloader.Manga:
+		case *service.Manga:
 			md.DownloadManga(object, out, options)
-		case *mangadownloader.Chapter:
+		case *service.Chapter:
 			md.DownloadChapter(object, out, options)
-		case *mangadownloader.Page:
+		case *service.Page:
 			md.DownloadPage(object, out, "image", options)
 		}
 	}()
