@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/matrixik/mangadownloader"
-	"github.com/matrixik/mangadownloader/service"
+	"github.com/pierrre/mangadownloader"
+	"github.com/pierrre/mangadownloader/service"
 
 	"errors"
 	"flag"
