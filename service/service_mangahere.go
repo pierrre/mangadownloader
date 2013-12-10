@@ -12,8 +12,8 @@ import (
 var (
 	mangahere = &MangaHereService{
 		Hosts: []string{
-			"www.mangareader.net",
-			"mangareader.net",
+			"www.mangahere.com",
+			"mangahere.com",
 		},
 	}
 
