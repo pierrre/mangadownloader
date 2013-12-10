@@ -1,4 +1,4 @@
-package service
+package utils
 
 import (
 	"bytes"
@@ -42,7 +42,7 @@ func HttpGet(u *url.URL, HttpRetry int) (response *http.Response, err error) {
 	return nil, errs
 }
 
-func htmlGetNodeAttribute(node *html.Node, key string) string {
+func HtmlGetNodeAttribute(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == key {
 			return attr.Val
@@ -51,7 +51,7 @@ func htmlGetNodeAttribute(node *html.Node, key string) string {
 	return ""
 }
 
-func htmlGetNodeText(node *html.Node) (string, error) {
+func HtmlGetNodeText(node *html.Node) (string, error) {
 	switch node.Type {
 	case html.TextNode:
 		return node.Data, nil
@@ -59,7 +59,7 @@ func htmlGetNodeText(node *html.Node) (string, error) {
 		buffer := new(bytes.Buffer)
 		childNode := node.FirstChild
 		for childNode != nil {
-			text, err := htmlGetNodeText(childNode)
+			text, err := HtmlGetNodeText(childNode)
 			if err != nil {
 				return "", err
 			}
@@ -81,31 +81,22 @@ func htmlGetNodeText(node *html.Node) (string, error) {
 	}
 }
 
-func urlCopy(u *url.URL) *url.URL {
+func UrlCopy(u *url.URL) *url.URL {
 	urlCopyVal := *u
 	urlCopy := &urlCopyVal
 	return urlCopy
 }
 
-func fileExists(file string) bool {
+func FileExists(file string) bool {
 	_, err := os.Stat(file)
 	return err == nil
 }
 
-func stringSliceContains(haystack []string, needle string) bool {
+func StringSliceContains(haystack []string, needle string) bool {
 	for _, s := range haystack {
 		if s == needle {
 			return true
 		}
 	}
 	return false
-}
-
-func chapterSliceReverse(chapters []*Chapter) []*Chapter {
-	count := len(chapters)
-	reversed := make([]*Chapter, 0, count)
-	for i := count - 1; i >= 0; i-- {
-		reversed = append(reversed, chapters[i])
-	}
-	return reversed
 }
