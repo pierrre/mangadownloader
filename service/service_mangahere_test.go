@@ -11,9 +11,9 @@ var (
 )
 
 func getTestMangaHereService() *MangaHereService {
-	md := CreateDefaultMangeDownloader()
-	service := md.Services["mangahere"]
+	service := Services["mangahere"]
 	mangaHereService := service.(*MangaHereService)
+	mangaHereService.httpRetry = 5
 	return mangaHereService
 }
 

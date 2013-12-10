@@ -11,9 +11,9 @@ var (
 )
 
 func getTestMangaWallService() *MangaWallService {
-	md := CreateDefaultMangeDownloader()
-	service := md.Services["mangawall"]
+	service := Services["mangawall"]
 	mangaWallService := service.(*MangaWallService)
+	mangaWallService.httpRetry = 5
 	return mangaWallService
 }
 

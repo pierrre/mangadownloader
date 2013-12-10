@@ -35,7 +35,7 @@ func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaUrl *url.
 	}
 }
 
-func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL, expectedChapterName string) {
+func testCommonServiceChapter(t *testing.T, service ServiceHandler, chapterUrl *url.URL, expectedChapterName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(chapterUrl)
