@@ -7,7 +7,7 @@ import (
 type Service struct {
 	Hosts     []string
 	UrlBase   *url.URL
-	HttpRetry int
+	httpRetry int
 }
 
 type ServiceHandler interface {
@@ -18,17 +18,18 @@ type ServiceHandler interface {
 	ChapterName(*Chapter) (string, error)
 	ChapterPages(*Chapter) ([]*Page, error)
 	PageImageUrl(*Page) (*url.URL, error)
+
+	HttpRetry() int
+	SetHttpRetry(int)
 }
 
-type Services map[string]ServiceHandler
-
-var services Services
+var Services = map[string]ServiceHandler{}
 
 func RegisterService(name string, service ServiceHandler) {
-	services[name] = service
+	Services[name] = service
 }
 
 func FindService(name string) (c ServiceHandler, ok bool) {
-	c, ok = services[name]
+	c, ok = Services[name]
 	return
 }

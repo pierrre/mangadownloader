@@ -16,3 +16,12 @@ func (chapter *Chapter) Name() (string, error) {
 func (chapter *Chapter) Pages() ([]*Page, error) {
 	return chapter.Service.ChapterPages(chapter)
 }
+
+func chapterSliceReverse(chapters []*Chapter) []*Chapter {
+	count := len(chapters)
+	reversed := make([]*Chapter, 0, count)
+	for i := count - 1; i >= 0; i-- {
+		reversed = append(reversed, chapters[i])
+	}
+	return reversed
+}

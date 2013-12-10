@@ -2,6 +2,7 @@ package mangadownloader
 
 import (
 	"github.com/matrixik/mangadownloader/service"
+	"github.com/matrixik/mangadownloader/utils"
 
 	"fmt"
 	"github.com/pierrre/archivefile/zip"
@@ -30,12 +31,11 @@ func init() {
 }
 
 type MangaDownloader struct {
-	Services service.Services
+	HttpRetry int
 }
 
 func NewMangaDownloader() *MangaDownloader {
 	md := new(MangaDownloader)
-	md.Services = make(service.Services)
 
 	return md
 }
@@ -43,17 +43,15 @@ func NewMangaDownloader() *MangaDownloader {
 func CreateDefaultMangeDownloader() *MangaDownloader {
 	md := new(MangaDownloader)
 
-	//for name, _ := range md.Services {
-	//	md.Services[name].{
-	//	HttpRetry: 5,
-	//	}
-	//}
+	for _, serviceStruct := range service.Services {
+		serviceStruct.SetHttpRetry(5)
+	}
 
 	return md
 }
 
 func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
-	for _, service := range md.Services {
+	for _, service := range service.Services {
 		if service.Supports(u) {
 			return service.Identify(u)
 		}
@@ -112,7 +110,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*service.Chapter, out str
 		close(result)
 	}()
 
-	errs := make(service.MultiError, 0)
+	errs := make(utils.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -140,12 +138,12 @@ func (md *MangaDownloader) DownloadChapter(chapter *service.Chapter, out string,
 }
 
 func (md *MangaDownloader) downloadChapter(chapter *service.Chapter, out string, options *Options) error {
-	if fileExists(out) {
+	if utils.FileExists(out) {
 		return nil
 	}
 
 	outTmp := out + ".tmp"
-	if fileExists(outTmp) {
+	if utils.FileExists(outTmp) {
 		err := os.RemoveAll(outTmp)
 		if err != nil {
 			return err
@@ -172,12 +170,12 @@ func (md *MangaDownloader) downloadChapter(chapter *service.Chapter, out string,
 
 func (md *MangaDownloader) downloadChapterCbz(chapter *service.Chapter, out string, options *Options) error {
 	outCbz := out + ".cbz"
-	if fileExists(outCbz) {
+	if utils.FileExists(outCbz) {
 		return nil
 	}
 
 	outCbzTmp := outCbz + ".tmp"
-	if fileExists(outCbzTmp) {
+	if utils.FileExists(outCbzTmp) {
 		err := os.RemoveAll(outCbzTmp)
 		if err != nil {
 			return err
@@ -244,7 +242,7 @@ func (md *MangaDownloader) downloadPages(pages []*service.Page, out string, opti
 		close(result)
 	}()
 
-	errs := make(service.MultiError, 0)
+	errs := make(utils.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -271,7 +269,7 @@ func (md *MangaDownloader) DownloadPage(page *service.Page, out string, filename
 		return err
 	}
 
-	response, err := service.HttpGet(imageUrl, 5)
+	response, err := utils.HttpGet(imageUrl, 5)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/matrixik/mangadownloader/utils"
+
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
 	"fmt"
@@ -36,7 +38,7 @@ func init() {
 }
 
 func (service *MangaFoxService) Supports(u *url.URL) bool {
-	return stringSliceContains(mangafox.Hosts, u.Host)
+	return utils.StringSliceContains(mangafox.Hosts, u.Host)
 }
 
 func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
@@ -64,7 +66,7 @@ func (service *MangaFoxService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -75,13 +77,13 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 	}
 	nameNode := nameNodes[0]
 
-	name := htmlGetNodeAttribute(nameNode, "alt")
+	name := utils.HtmlGetNodeAttribute(nameNode, "alt")
 
 	return name, nil
 }
 
 func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +94,7 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
+		chapterUrl, err := url.Parse(utils.HtmlGetNodeAttribute(linkNode, "href"))
 		if err != nil {
 			return nil, err
 		}
@@ -119,19 +121,19 @@ func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	basePageUrl := urlCopy(chapter.Url)
+	basePageUrl := utils.UrlCopy(chapter.Url)
 	basePageUrl.Path = serviceMangaFoxRegexpPageBaseUrlPath.ReplaceAllString(basePageUrl.Path, "")
 
 	optionNodes := serviceMangaFoxHtmlSelectorChapterPages.Find(rootNode)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageNumberString := htmlGetNodeAttribute(optionNode, "value")
+		pageNumberString := utils.HtmlGetNodeAttribute(optionNode, "value")
 		pageNumber, err := strconv.Atoi(pageNumberString)
 		if err != nil {
 			return nil, err
@@ -141,7 +143,7 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 			continue
 		}
 
-		pageUrl := urlCopy(basePageUrl)
+		pageUrl := utils.UrlCopy(basePageUrl)
 		pageUrl.Path += fmt.Sprintf("/%d.html", pageNumber)
 
 		page := &Page{
@@ -155,7 +157,7 @@ func (service *MangaFoxService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 }
 
 func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -166,12 +168,19 @@ func (service *MangaFoxService) PageImageUrl(page *Page) (*url.URL, error) {
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
 	return imageUrl, nil
+}
+
+func (service *MangaFoxService) HttpRetry() int {
+	return service.httpRetry
+}
+func (service *MangaFoxService) SetHttpRetry(nr int) {
+	service.httpRetry = nr
 }
 
 func (service *MangaFoxService) String() string {

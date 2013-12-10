@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/matrixik/mangadownloader/utils"
+
 	"code.google.com/p/go-html-transform/css/selector"
 	"fmt"
 	"net/url"
@@ -33,7 +35,7 @@ func init() {
 }
 
 func (service *MangaHereService) Supports(u *url.URL) bool {
-	return stringSliceContains(mangahere.Hosts, u.Host)
+	return utils.StringSliceContains(mangahere.Hosts, u.Host)
 }
 
 func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
@@ -61,7 +63,7 @@ func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +74,7 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 	}
 	nameNode := nameNodes[0]
 
-	name, err := htmlGetNodeText(nameNode)
+	name, err := utils.HtmlGetNodeText(nameNode)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +89,7 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +97,7 @@ func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error)
 	linkNodes := serviceMangaHereHtmlSelectorMangaChapters.Find(rootNode)
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
-		chapterUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
+		chapterUrl, err := url.Parse(utils.HtmlGetNodeAttribute(linkNode, "href"))
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +123,7 @@ func (service *MangaHereService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +132,7 @@ func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error)
 
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
-		pageUrl, err := url.Parse(htmlGetNodeAttribute(optionNode, "value"))
+		pageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(optionNode, "value"))
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +147,7 @@ func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error)
 }
 
 func (service *MangaHereService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -156,12 +158,19 @@ func (service *MangaHereService) PageImageUrl(page *Page) (*url.URL, error) {
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
 	return imageUrl, nil
+}
+
+func (service *MangaHereService) HttpRetry() int {
+	return service.httpRetry
+}
+func (service *MangaHereService) SetHttpRetry(nr int) {
+	service.httpRetry = nr
 }
 
 func (service *MangaHereService) String() string {

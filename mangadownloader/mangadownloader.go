@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/matrixik/mangadownloader"
+	"github.com/matrixik/mangadownloader/service"
+
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/pierrre/mangadownloader"
 	"net/url"
 )
 
@@ -48,17 +50,17 @@ func main() {
 			panic(err)
 		}
 		switch object := o.(type) {
-		case *mangadownloader.Manga:
+		case *service.Manga:
 			err := md.DownloadManga(object, out, options)
 			if err != nil {
 				panic(err)
 			}
-		case *mangadownloader.Chapter:
+		case *service.Chapter:
 			err := md.DownloadChapter(object, out, options)
 			if err != nil {
 				panic(err)
 			}
-		case *mangadownloader.Page:
+		case *service.Page:
 			err := md.DownloadPage(object, out, "image", options)
 			if err != nil {
 				panic(err)

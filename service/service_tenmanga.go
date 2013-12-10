@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/matrixik/mangadownloader/utils"
+
 	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
@@ -39,7 +41,7 @@ func init() {
 type TenMangaService Service
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
-	return stringSliceContains(tenmanga.Hosts, u.Host)
+	return utils.StringSliceContains(tenmanga.Hosts, u.Host)
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
@@ -67,7 +69,7 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +89,7 @@ func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := HttpGetHtml(manga.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(manga.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +99,8 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 	chapters := make([]*Chapter, 0, chapterCount)
 	for i := chapterCount - 1; i >= 0; i-- {
 		linkNode := linkNodes[i]
-		chapterUrl := urlCopy(tenmanga.UrlBase)
-		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
+		chapterUrl := utils.UrlCopy(tenmanga.UrlBase)
+		chapterUrl.Path = utils.HtmlGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
 			Url:     chapterUrl,
 			Service: service,
@@ -110,7 +112,7 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
-	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
@@ -120,7 +122,7 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 		return "", errors.New("Manga name node not found")
 	}
 	mangaNameNode := mangaNameNodes[1]
-	mangaName, err := htmlGetNodeText(mangaNameNode)
+	mangaName, err := utils.HtmlGetNodeText(mangaNameNode)
 	if err != nil {
 		return "", err
 	}
@@ -130,7 +132,7 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 		return "", errors.New("Title node not found")
 	}
 	titleNode := titleNodes[0]
-	title, err := htmlGetNodeText(titleNode)
+	title, err := utils.HtmlGetNodeText(titleNode)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +149,7 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := HttpGetHtml(chapter.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(chapter.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +157,7 @@ func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 	pageNodes := serviceTenMangaHtmlSelectorChapterPages.Find(rootNode)
 	pages := make([]*Page, 0, len(pageNodes))
 	for _, pageNode := range pageNodes {
-		pageUrl, err := url.Parse(htmlGetNodeAttribute(pageNode, "value"))
+		pageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(pageNode, "value"))
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +172,7 @@ func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 }
 
 func (service *TenMangaService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := HttpGetHtml(page.Url, service.HttpRetry)
+	rootNode, err := utils.HttpGetHtml(page.Url, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +183,19 @@ func (service *TenMangaService) PageImageUrl(page *Page) (*url.URL, error) {
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	imageUrl, err := url.Parse(utils.HtmlGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
 	return imageUrl, nil
+}
+
+func (service *TenMangaService) HttpRetry() int {
+	return service.httpRetry
+}
+func (service *TenMangaService) SetHttpRetry(nr int) {
+	service.httpRetry = nr
 }
 
 func (service *TenMangaService) String() string {
