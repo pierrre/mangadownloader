@@ -1,8 +1,8 @@
 package mangadownloader
 
 import (
-	"github.com/pierrre/mangadownloader/service"
-	"github.com/pierrre/mangadownloader/utils"
+	"github.com/matrixik/mangadownloader/service"
+	"github.com/matrixik/mangadownloader/utils"
 
 	"fmt"
 	"github.com/pierrre/archivefile/zip"
