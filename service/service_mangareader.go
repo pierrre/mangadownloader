@@ -16,12 +16,7 @@ const (
 )
 
 var (
-	mangareader = &MangaReaderService{
-		Hosts: []string{
-			"www.mangareader.net",
-			"mangareader.net",
-		},
-	}
+	mangareader = &MangaReaderService{}
 
 	serviceMangaReaderHTMLSelectorIdentifyManga, _   = selector.Selector("#chapterlist")
 	serviceMangaReaderHTMLSelectorIdentifyChapter, _ = selector.Selector("#pageMenu")
@@ -37,6 +32,13 @@ var (
 )
 
 func init() {
+	mangareader.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"www.mangareader.net",
+			"mangareader.net",
+		},
+	}
+
 	mangareader.URLBase = new(url.URL)
 	mangareader.URLBase.Scheme = "http"
 	mangareader.URLBase.Host = mangareader.Hosts[0]
@@ -44,7 +46,9 @@ func init() {
 	RegisterService("mangareader", mangareader)
 }
 
-type MangaReaderService Service
+type MangaReaderService struct {
+	ServiceCommon
+}
 
 func init() {
 	RegisterService("mangareader", mangareader)

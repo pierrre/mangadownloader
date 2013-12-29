@@ -10,12 +10,7 @@ import (
 )
 
 var (
-	mangawall = &MangaWallService{
-		Hosts: []string{
-			"mangawall.com",
-			"www.mangawall.com",
-		},
-	}
+	mangawall = &MangaWallService{}
 
 	serviceMangaWallHTMLSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
 	serviceMangaWallHTMLSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
@@ -30,6 +25,13 @@ var (
 )
 
 func init() {
+	mangawall.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"mangawall.com",
+			"www.mangawall.com",
+		},
+	}
+
 	mangawall.URLBase = new(url.URL)
 	mangawall.URLBase.Scheme = "http"
 	mangawall.URLBase.Host = mangawall.Hosts[0]
@@ -37,7 +39,9 @@ func init() {
 	RegisterService("mangawall", mangawall)
 }
 
-type MangaWallService Service
+type MangaWallService struct {
+	ServiceCommon
+}
 
 func (service *MangaWallService) Supports(u *url.URL) bool {
 	return utils.StringSliceContains(mangawall.Hosts, u.Host)

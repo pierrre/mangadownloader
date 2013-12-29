@@ -6,7 +6,7 @@ import (
 
 type Page struct {
 	URL     *url.URL
-	Service ServiceHandler
+	Service Service
 }
 
 func (page *Page) ImageURL() (*url.URL, error) {

@@ -6,7 +6,7 @@ import (
 
 type Chapter struct {
 	URL     *url.URL
-	Service ServiceHandler
+	Service Service
 }
 
 func (chapter *Chapter) Name() (string, error) {

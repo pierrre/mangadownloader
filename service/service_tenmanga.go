@@ -11,12 +11,7 @@ import (
 )
 
 var (
-	tenmanga = &TenMangaService{
-		Hosts: []string{
-			"www.tenmanga.com",
-			"tenmanga.com",
-		},
-	}
+	tenmanga = &TenMangaService{}
 
 	serviceTenMangaHTMLSelectorMangaName, _        = selector.Selector(".postion .red")
 	serviceTenMangaHTMLSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
@@ -31,6 +26,13 @@ var (
 )
 
 func init() {
+	tenmanga.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"www.tenmanga.com",
+			"tenmanga.com",
+		},
+	}
+
 	tenmanga.URLBase = new(url.URL)
 	tenmanga.URLBase.Scheme = "http"
 	tenmanga.URLBase.Host = tenmanga.Hosts[0]
@@ -38,7 +40,9 @@ func init() {
 	RegisterService("tenmanga", tenmanga)
 }
 
-type TenMangaService Service
+type TenMangaService struct {
+	ServiceCommon
+}
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
 	return utils.StringSliceContains(tenmanga.Hosts, u.Host)

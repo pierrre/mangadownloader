@@ -6,7 +6,7 @@ import (
 
 type Manga struct {
 	URL     *url.URL
-	Service ServiceHandler
+	Service Service
 }
 
 func (manga *Manga) Name() (string, error) {

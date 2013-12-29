@@ -4,13 +4,13 @@ import (
 	"net/url"
 )
 
-type Service struct {
+type ServiceCommon struct {
 	Hosts     []string
 	URLBase   *url.URL
 	httpRetry int
 }
 
-type ServiceHandler interface {
+type Service interface {
 	Supports(*url.URL) bool
 	Identify(*url.URL) (interface{}, error)
 	MangaName(*Manga) (string, error)
@@ -23,13 +23,13 @@ type ServiceHandler interface {
 	SetHTTPRetry(int)
 }
 
-var Services = map[string]ServiceHandler{}
+var Services = map[string]Service{}
 
-func RegisterService(name string, service ServiceHandler) {
+func RegisterService(name string, service Service) {
 	Services[name] = service
 }
 
-func FindService(name string) (c ServiceHandler, ok bool) {
+func FindService(name string) (c Service, ok bool) {
 	c, ok = Services[name]
 	return
 }

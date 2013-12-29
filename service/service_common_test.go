@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaURL *url.URL, expectedMangaName string) {
+func testCommonServiceManga(t *testing.T, service Service, mangaURL *url.URL, expectedMangaName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(mangaURL)
@@ -35,7 +35,7 @@ func testCommonServiceManga(t *testing.T, service ServiceHandler, mangaURL *url.
 	}
 }
 
-func testCommonServiceChapter(t *testing.T, service ServiceHandler, chapterURL *url.URL, expectedChapterName string) {
+func testCommonServiceChapter(t *testing.T, service Service, chapterURL *url.URL, expectedChapterName string) {
 	//t.Parallel()
 
 	object, err := service.Identify(chapterURL)

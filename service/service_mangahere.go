@@ -10,12 +10,7 @@ import (
 )
 
 var (
-	mangahere = &MangaHereService{
-		Hosts: []string{
-			"www.mangahere.com",
-			"mangahere.com",
-		},
-	}
+	mangahere = &MangaHereService{}
 
 	serviceMangaHereHTMLSelectorMangaName, _     = selector.Selector(".detail_list .title h3")
 	serviceMangaHereHTMLSelectorMangaChapters, _ = selector.Selector(".detail_list a")
@@ -28,9 +23,18 @@ var (
 	serviceMangaHereRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
 )
 
-type MangaHereService Service
+type MangaHereService struct {
+	ServiceCommon
+}
 
 func init() {
+	mangahere.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"www.mangahere.com",
+			"mangahere.com",
+		},
+	}
+
 	RegisterService("mangahere", mangahere)
 }
 
@@ -115,7 +119,8 @@ func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error)
 func (service *MangaHereService) ChapterName(chapter *Chapter) (string, error) {
 	matches := serviceMangaHereRegexpChapterName.FindStringSubmatch(chapter.URL.Path)
 	if matches == nil {
-		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaHereRegexpChapterName, chapter.URL)
+		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'",
+			serviceMangaHereRegexpChapterName, chapter.URL)
 	}
 	name := matches[1]
 

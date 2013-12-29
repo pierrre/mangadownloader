@@ -12,12 +12,7 @@ import (
 )
 
 var (
-	mangafox = &MangaFoxService{
-		Hosts: []string{
-			"mangafox.me",
-			"beta.mangafox.com",
-		},
-	}
+	mangafox = &MangaFoxService{}
 
 	serviceMangaFoxHTMLSelectorMangaName, _      = selector.Selector("#series_info div.cover img")
 	serviceMangaFoxHTMLSelectorMangaChapters1, _ = selector.Selector("#chapters ul.chlist li h3 a")
@@ -31,9 +26,18 @@ var (
 	serviceMangaFoxRegexpPageBaseURLPath, _ = regexp.Compile("/?(\\d+\\.html)?$")
 )
 
-type MangaFoxService Service
+type MangaFoxService struct {
+	ServiceCommon
+}
 
 func init() {
+	mangafox.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"mangafox.me",
+			"beta.mangafox.com",
+		},
+	}
+
 	RegisterService("mangafox", mangafox)
 }
 
