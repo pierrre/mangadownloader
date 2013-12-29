@@ -21,6 +21,17 @@ var (
 	filenameCleanReplacer     *strings.Replacer
 )
 
+type MangaDownloader struct {
+	HTTPRetry int
+}
+
+type Options struct {
+	Cbz             bool
+	PageDigitCount  int
+	ParallelChapter int
+	ParallelPage    int
+}
+
 func init() {
 	filenameCleanReplacements := make([]string, len(filenameReservedCharacters)*2)
 	for _, char := range filenameReservedCharacters {
@@ -28,10 +39,6 @@ func init() {
 		filenameCleanReplacements = append(filenameCleanReplacements, " ")
 	}
 	filenameCleanReplacer = strings.NewReplacer(filenameCleanReplacements...)
-}
-
-type MangaDownloader struct {
-	HTTPRetry int
 }
 
 func NewMangaDownloader() *MangaDownloader {
@@ -305,13 +312,6 @@ func (md *MangaDownloader) DownloadPage(page *service.Page, out string, filename
 	}
 
 	return nil
-}
-
-type Options struct {
-	Cbz             bool
-	PageDigitCount  int
-	ParallelChapter int
-	ParallelPage    int
 }
 
 func cleanFilename(name string) string {
