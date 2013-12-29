@@ -105,15 +105,17 @@ func httpHandleAdd(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	go func() {
-		o, err := md.Identify(u)
-		if err != nil {
-			return
-		}
 		options := &md.Options{
 			Cbz:             true,
 			PageDigitCount:  4,
 			ParallelChapter: 4,
 			ParallelPage:    8,
+
+			HTTPRetry: 5,
+		}
+		o, err := md.Identify(u, options)
+		if err != nil {
+			return
 		}
 		out := ""
 		switch object := o.(type) {

@@ -44,7 +44,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		o, err := md.Identify(u)
+		o, err := md.Identify(u, options)
 		if err != nil {
 			panic(err)
 		}

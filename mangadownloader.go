@@ -43,9 +43,10 @@ func init() {
 	}
 }
 
-func Identify(u *url.URL) (interface{}, error) {
+func Identify(u *url.URL, options *Options) (interface{}, error) {
 	for _, service := range service.Services {
 		if service.Supports(u) {
+			service.SetHTTPRetry(options.HTTPRetry)
 			return service.Identify(u)
 		}
 	}
@@ -261,7 +262,7 @@ func DownloadPage(page *service.Page, out string, filename string, options *Opti
 		return err
 	}
 
-	response, err := utils.HTTPGet(imageURL, 5)
+	response, err := utils.HTTPGet(imageURL, options.HTTPRetry)
 	if err != nil {
 		return err
 	}
