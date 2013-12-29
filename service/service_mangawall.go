@@ -24,6 +24,10 @@ var (
 	serviceMangaWallRegexpPageBaseURLPath, _ = regexp.Compile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
 )
 
+type MangaWallService struct {
+	ServiceCommon
+}
+
 func init() {
 	mangawall.ServiceCommon = ServiceCommon{
 		Hosts: []string{
@@ -37,10 +41,6 @@ func init() {
 	mangawall.URLBase.Host = mangawall.Hosts[0]
 
 	RegisterService("mangawall", mangawall)
-}
-
-type MangaWallService struct {
-	ServiceCommon
 }
 
 func (service *MangaWallService) Supports(u *url.URL) bool {

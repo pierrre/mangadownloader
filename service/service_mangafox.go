@@ -77,7 +77,8 @@ func (service *MangaFoxService) MangaName(manga *Manga) (string, error) {
 
 	nameNodes := serviceMangaFoxHTMLSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
-		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaFoxHTMLSelectorMangaName, manga.URL)
+		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'",
+			serviceMangaFoxHTMLSelectorMangaName, manga.URL)
 	}
 	nameNode := nameNodes[0]
 
@@ -117,7 +118,8 @@ func (service *MangaFoxService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 func (service *MangaFoxService) ChapterName(chapter *Chapter) (string, error) {
 	matches := serviceMangaFoxRegexpChapterName.FindStringSubmatch(chapter.URL.Path)
 	if matches == nil {
-		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'", serviceMangaFoxRegexpChapterName, chapter.URL)
+		return "", fmt.Errorf("regexp '%s' (chapter name) not found in '%s'",
+			serviceMangaFoxRegexpChapterName, chapter.URL)
 	}
 	name := matches[1]
 
@@ -168,7 +170,8 @@ func (service *MangaFoxService) PageImageURL(page *Page) (*url.URL, error) {
 
 	imgNodes := serviceMangaFoxHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
-		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaFoxHTMLSelectorPageImage, page.URL)
+		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'",
+			serviceMangaFoxHTMLSelectorPageImage, page.URL)
 	}
 	imgNode := imgNodes[0]
 

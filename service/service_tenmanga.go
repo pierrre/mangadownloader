@@ -25,6 +25,10 @@ var (
 	serviceTenMangaRegexpChapterName, _     = regexp.Compile("^(.+) Page \\d+$")
 )
 
+type TenMangaService struct {
+	ServiceCommon
+}
+
 func init() {
 	tenmanga.ServiceCommon = ServiceCommon{
 		Hosts: []string{
@@ -38,10 +42,6 @@ func init() {
 	tenmanga.URLBase.Host = tenmanga.Hosts[0]
 
 	RegisterService("tenmanga", tenmanga)
-}
-
-type TenMangaService struct {
-	ServiceCommon
 }
 
 func (service *TenMangaService) Supports(u *url.URL) bool {

@@ -31,6 +31,10 @@ var (
 	serviceMangaReaderFormatChapter = "%0" + strconv.Itoa(serviceMangaReadeChapterDigitCount) + "d"
 )
 
+type MangaReaderService struct {
+	ServiceCommon
+}
+
 func init() {
 	mangareader.ServiceCommon = ServiceCommon{
 		Hosts: []string{
@@ -44,10 +48,6 @@ func init() {
 	mangareader.URLBase.Host = mangareader.Hosts[0]
 
 	RegisterService("mangareader", mangareader)
-}
-
-type MangaReaderService struct {
-	ServiceCommon
 }
 
 func init() {

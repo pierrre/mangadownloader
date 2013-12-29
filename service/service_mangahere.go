@@ -74,7 +74,8 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 
 	nameNodes := serviceMangaHereHTMLSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 1 {
-		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaHereHTMLSelectorMangaName, manga.URL)
+		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'",
+			serviceMangaHereHTMLSelectorMangaName, manga.URL)
 	}
 	nameNode := nameNodes[0]
 
@@ -85,7 +86,8 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 
 	matches := serviceMangaHereRegexpMangaName.FindStringSubmatch(name)
 	if matches == nil {
-		return "", fmt.Errorf("regexp '%s' (manga name) not found in '%s'", serviceMangaHereRegexpMangaName, name)
+		return "", fmt.Errorf("regexp '%s' (manga name) not found in '%s'",
+			serviceMangaHereRegexpMangaName, name)
 	}
 	name = matches[1]
 
@@ -159,7 +161,8 @@ func (service *MangaHereService) PageImageURL(page *Page) (*url.URL, error) {
 
 	imgNodes := serviceMangaHereHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
-		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaHereHTMLSelectorPageImage, page.URL)
+		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'",
+			serviceMangaHereHTMLSelectorPageImage, page.URL)
 	}
 	imgNode := imgNodes[0]
 
