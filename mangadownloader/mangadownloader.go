@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/matrixik/mangadownloader"
+	md "github.com/matrixik/mangadownloader"
 	"github.com/matrixik/mangadownloader/service"
 
 	"errors"
@@ -30,14 +30,13 @@ func main() {
 		return
 	}
 
-	md := mangadownloader.CreateDefaultMangeDownloader()
-	md.HTTPRetry = *httpRetryFlag
-
-	options := &mangadownloader.Options{
+	options := &md.Options{
 		Cbz:             *cbzFlag,
 		PageDigitCount:  *pageDigitCountFlag,
 		ParallelChapter: *parallelChapterFlag,
 		ParallelPage:    *parallelPageFlag,
+
+		HTTPRetry: *httpRetryFlag,
 	}
 
 	for _, arg := range args {

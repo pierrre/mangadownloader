@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/matrixik/mangadownloader"
+	md "github.com/matrixik/mangadownloader"
 	"github.com/matrixik/mangadownloader/service"
 
 	"flag"
@@ -16,14 +16,6 @@ import (
 const (
 	HTTP_ADDR_DEFAULT = "localhost:0"
 )
-
-var (
-	md *mangadownloader.MangaDownloader
-)
-
-func init() {
-	md = mangadownloader.CreateDefaultMangeDownloader()
-}
 
 func main() {
 	httpAddrFlag := flag.String("http", HTTP_ADDR_DEFAULT, "Http")
@@ -117,7 +109,7 @@ func httpHandleAdd(writer http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			return
 		}
-		options := &mangadownloader.Options{
+		options := &md.Options{
 			Cbz:             true,
 			PageDigitCount:  4,
 			ParallelChapter: 4,
