@@ -4,4 +4,7 @@ go:
   - 1.2
   - tip
 
-script: go test -v -short ./...
+before_install:
+  - go get -v code.google.com/p/go.tools/cmd/cover
+
+script: go test -v -cover -short ./...
