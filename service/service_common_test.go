@@ -1,14 +1,14 @@
-package mangadownloader
+package service
 
 import (
 	"net/url"
 	"testing"
 )
 
-func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, expectedMangaName string) {
+func testCommonServiceManga(t *testing.T, service Service, mangaURL *url.URL, expectedMangaName string) {
 	//t.Parallel()
 
-	object, err := service.Identify(mangaUrl)
+	object, err := service.Identify(mangaURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,10 +35,10 @@ func testCommonServiceManga(t *testing.T, service Service, mangaUrl *url.URL, ex
 	}
 }
 
-func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL, expectedChapterName string) {
+func testCommonServiceChapter(t *testing.T, service Service, chapterURL *url.URL, expectedChapterName string) {
 	//t.Parallel()
 
-	object, err := service.Identify(chapterUrl)
+	object, err := service.Identify(chapterURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func testCommonServiceChapter(t *testing.T, service Service, chapterUrl *url.URL
 	}
 
 	page := pages[0]
-	_, err = page.ImageUrl()
+	_, err = page.ImageURL()
 	if err != nil {
 		t.Fatal(err)
 	}

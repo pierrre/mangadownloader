@@ -1,8 +1,10 @@
 package main
 
 import (
+	md "github.com/pierrre/mangadownloader"
+	"github.com/pierrre/mangadownloader/service"
+
 	"flag"
-	"github.com/pierrre/mangadownloader"
 	"log"
 	"net"
 	"net/http"
@@ -14,14 +16,6 @@ import (
 const (
 	HTTP_ADDR_DEFAULT = "localhost:0"
 )
-
-var (
-	md *mangadownloader.MangaDownloader
-)
-
-func init() {
-	md = mangadownloader.CreateDefaultMangeDownloader()
-}
 
 func main() {
 	httpAddrFlag := flag.String("http", HTTP_ADDR_DEFAULT, "Http")
@@ -41,7 +35,7 @@ func main() {
 			Host:   listener.Addr().String(),
 		}
 
-		err = openUrl(u)
+		err = openURL(u)
 		if err != nil {
 			log.Println(err)
 			log.Printf("Open '%s' manually", u)
@@ -57,7 +51,7 @@ func main() {
 	}
 }
 
-func openUrl(u *url.URL) error {
+func openURL(u *url.URL) error {
 	us := u.String()
 	var command *exec.Cmd
 	switch runtime.GOOS {
@@ -111,23 +105,25 @@ func httpHandleAdd(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	go func() {
-		o, err := md.Identify(u)
-		if err != nil {
-			return
-		}
-		options := &mangadownloader.Options{
+		options := &md.Options{
 			Cbz:             true,
 			PageDigitCount:  4,
 			ParallelChapter: 4,
 			ParallelPage:    8,
+
+			HTTPRetry: 5,
+		}
+		o, err := md.Identify(u, options)
+		if err != nil {
+			return
 		}
 		out := ""
 		switch object := o.(type) {
-		case *mangadownloader.Manga:
+		case *service.Manga:
 			md.DownloadManga(object, out, options)
-		case *mangadownloader.Chapter:
+		case *service.Chapter:
 			md.DownloadChapter(object, out, options)
-		case *mangadownloader.Page:
+		case *service.Page:
 			md.DownloadPage(object, out, "image", options)
 		}
 	}()

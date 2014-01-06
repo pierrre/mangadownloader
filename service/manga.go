@@ -1,11 +1,11 @@
-package mangadownloader
+package service
 
 import (
 	"net/url"
 )
 
 type Manga struct {
-	Url     *url.URL
+	URL     *url.URL
 	Service Service
 }
 

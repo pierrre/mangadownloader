@@ -1,6 +1,8 @@
-package mangadownloader
+package service
 
 import (
+	"github.com/pierrre/mangadownloader/utils"
+
 	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
@@ -9,37 +11,41 @@ import (
 )
 
 var (
-	serviceTenMangaHosts = []string{
-		"www.tenmanga.com",
-		"tenmanga.com",
-	}
+	tenmanga = &TenMangaService{}
 
-	serviceTenMangaUrlBase *url.URL
-
-	serviceTenMangaHtmlSelectorMangaName, _        = selector.Selector(".postion .red")
-	serviceTenMangaHtmlSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
-	serviceTenMangaHtmlSelectorChapterNameTitle, _ = selector.Selector("title")
-	serviceTenMangaHtmlSelectorChapterNameManga, _ = selector.Selector(".postion a")
-	serviceTenMangaHtmlSelectorChapterPages, _     = selector.Selector("#page option")
-	serviceTenMangaHtmlSelectorPageImage, _        = selector.Selector("#comicpic")
+	serviceTenMangaHTMLSelectorMangaName, _        = selector.Selector(".postion .red")
+	serviceTenMangaHTMLSelectorMangaChapters, _    = selector.Selector(".chapter_list td[align=left] a")
+	serviceTenMangaHTMLSelectorChapterNameTitle, _ = selector.Selector("title")
+	serviceTenMangaHTMLSelectorChapterNameManga, _ = selector.Selector(".postion a")
+	serviceTenMangaHTMLSelectorChapterPages, _     = selector.Selector("#page option")
+	serviceTenMangaHTMLSelectorPageImage, _        = selector.Selector("#comicpic")
 
 	serviceTenMangaRegexpIdentifyManga, _   = regexp.Compile("^/book/.+$")
 	serviceTenMangaRegexpIdentifyChapter, _ = regexp.Compile("^/chapter/.+$")
 	serviceTenMangaRegexpChapterName, _     = regexp.Compile("^(.+) Page \\d+$")
 )
 
-func init() {
-	serviceTenMangaUrlBase = new(url.URL)
-	serviceTenMangaUrlBase.Scheme = "http"
-	serviceTenMangaUrlBase.Host = serviceTenMangaHosts[0]
+type TenMangaService struct {
+	ServiceCommon
 }
 
-type TenMangaService struct {
-	Md *MangaDownloader
+func init() {
+	tenmanga.ServiceCommon = ServiceCommon{
+		Hosts: []string{
+			"www.tenmanga.com",
+			"tenmanga.com",
+		},
+	}
+
+	tenmanga.URLBase = new(url.URL)
+	tenmanga.URLBase.Scheme = "http"
+	tenmanga.URLBase.Host = tenmanga.Hosts[0]
+
+	RegisterService("tenmanga", tenmanga)
 }
 
 func (service *TenMangaService) Supports(u *url.URL) bool {
-	return stringSliceContains(serviceTenMangaHosts, u.Host)
+	return utils.StringSliceContains(tenmanga.Hosts, u.Host)
 }
 
 func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
@@ -49,7 +55,7 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceTenMangaRegexpIdentifyManga.MatchString(u.Path) {
 		manga := &Manga{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return manga, nil
@@ -57,7 +63,7 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 
 	if serviceTenMangaRegexpIdentifyChapter.MatchString(u.Path) {
 		chapter := &Chapter{
-			Url:     u,
+			URL:     u,
 			Service: service,
 		}
 		return chapter, nil
@@ -67,12 +73,12 @@ func (service *TenMangaService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	nameNodes := serviceTenMangaHtmlSelectorMangaName.Find(rootNode)
+	nameNodes := serviceTenMangaHTMLSelectorMangaName.Find(rootNode)
 	if len(nameNodes) != 2 {
 		return "", errors.New("Name node not found")
 	}
@@ -87,20 +93,20 @@ func (service *TenMangaService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	rootNode, err := utils.HTTPGetHTML(manga.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	linkNodes := serviceTenMangaHtmlSelectorMangaChapters.Find(rootNode)
+	linkNodes := serviceTenMangaHTMLSelectorMangaChapters.Find(rootNode)
 	chapterCount := len(linkNodes)
 	chapters := make([]*Chapter, 0, chapterCount)
 	for i := chapterCount - 1; i >= 0; i-- {
 		linkNode := linkNodes[i]
-		chapterUrl := urlCopy(serviceTenMangaUrlBase)
-		chapterUrl.Path = htmlGetNodeAttribute(linkNode, "href")
+		chapterURL := utils.URLCopy(tenmanga.URLBase)
+		chapterURL.Path = utils.HTMLGetNodeAttribute(linkNode, "href")
 		chapter := &Chapter{
-			Url:     chapterUrl,
+			URL:     chapterURL,
 			Service: service,
 		}
 		chapters = append(chapters, chapter)
@@ -110,27 +116,27 @@ func (service *TenMangaService) MangaChapters(manga *Manga) ([]*Chapter, error) 
 }
 
 func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return "", err
 	}
 
-	mangaNameNodes := serviceTenMangaHtmlSelectorChapterNameManga.Find(rootNode)
+	mangaNameNodes := serviceTenMangaHTMLSelectorChapterNameManga.Find(rootNode)
 	if len(mangaNameNodes) != 2 {
 		return "", errors.New("Manga name node not found")
 	}
 	mangaNameNode := mangaNameNodes[1]
-	mangaName, err := htmlGetNodeText(mangaNameNode)
+	mangaName, err := utils.HTMLGetNodeText(mangaNameNode)
 	if err != nil {
 		return "", err
 	}
 
-	titleNodes := serviceTenMangaHtmlSelectorChapterNameTitle.Find(rootNode)
+	titleNodes := serviceTenMangaHTMLSelectorChapterNameTitle.Find(rootNode)
 	if len(titleNodes) != 1 {
 		return "", errors.New("Title node not found")
 	}
 	titleNode := titleNodes[0]
-	title, err := htmlGetNodeText(titleNode)
+	title, err := utils.HTMLGetNodeText(titleNode)
 	if err != nil {
 		return "", err
 	}
@@ -147,20 +153,20 @@ func (service *TenMangaService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	rootNode, err := utils.HTTPGetHTML(chapter.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	pageNodes := serviceTenMangaHtmlSelectorChapterPages.Find(rootNode)
+	pageNodes := serviceTenMangaHTMLSelectorChapterPages.Find(rootNode)
 	pages := make([]*Page, 0, len(pageNodes))
 	for _, pageNode := range pageNodes {
-		pageUrl, err := url.Parse(htmlGetNodeAttribute(pageNode, "value"))
+		pageURL, err := url.Parse(utils.HTMLGetNodeAttribute(pageNode, "value"))
 		if err != nil {
 			return nil, err
 		}
 		page := &Page{
-			Url:     pageUrl,
+			URL:     pageURL,
 			Service: service,
 		}
 		pages = append(pages, page)
@@ -169,24 +175,31 @@ func (service *TenMangaService) ChapterPages(chapter *Chapter) ([]*Page, error) 
 	return pages, nil
 }
 
-func (service *TenMangaService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+func (service *TenMangaService) PageImageURL(page *Page) (*url.URL, error) {
+	rootNode, err := utils.HTTPGetHTML(page.URL, service.httpRetry)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceTenMangaHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := serviceTenMangaHTMLSelectorPageImage.Find(rootNode)
 	if len(imgNodes) != 1 {
 		return nil, errors.New("Image node not found")
 	}
 	imgNode := imgNodes[0]
 
-	imageUrl, err := url.Parse(htmlGetNodeAttribute(imgNode, "src"))
+	imageURL, err := url.Parse(utils.HTMLGetNodeAttribute(imgNode, "src"))
 	if err != nil {
 		return nil, err
 	}
 
-	return imageUrl, nil
+	return imageURL, nil
+}
+
+func (service *TenMangaService) HTTPRetry() int {
+	return service.httpRetry
+}
+func (service *TenMangaService) SetHTTPRetry(nr int) {
+	service.httpRetry = nr
 }
 
 func (service *TenMangaService) String() string {

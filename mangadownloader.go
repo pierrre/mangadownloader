@@ -1,11 +1,12 @@
 package mangadownloader
 
 import (
-	"code.google.com/p/go.net/html"
+	"github.com/pierrre/mangadownloader/service"
+	"github.com/pierrre/mangadownloader/utils"
+
 	"fmt"
 	"github.com/pierrre/archivefile/zip"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -20,6 +21,15 @@ var (
 	filenameCleanReplacer     *strings.Replacer
 )
 
+type Options struct {
+	Cbz             bool
+	PageDigitCount  int
+	ParallelChapter int
+	ParallelPage    int
+
+	HTTPRetry int
+}
+
 func init() {
 	filenameCleanReplacements := make([]string, len(filenameReservedCharacters)*2)
 	for _, char := range filenameReservedCharacters {
@@ -27,51 +37,16 @@ func init() {
 		filenameCleanReplacements = append(filenameCleanReplacements, " ")
 	}
 	filenameCleanReplacer = strings.NewReplacer(filenameCleanReplacements...)
+
+	for _, serviceStruct := range service.Services {
+		serviceStruct.SetHTTPRetry(5)
+	}
 }
 
-type MangaDownloader struct {
-	Services  map[string]Service
-	HttpRetry int
-}
-
-func NewMangaDownloader() *MangaDownloader {
-	md := new(MangaDownloader)
-	md.Services = make(map[string]Service)
-
-	return md
-}
-
-func CreateDefaultMangeDownloader() *MangaDownloader {
-	md := NewMangaDownloader()
-
-	md.HttpRetry = 5
-
-	md.Services["mangafox"] = &MangaFoxService{
-		Md: md,
-	}
-
-	md.Services["mangahere"] = &MangaHereService{
-		Md: md,
-	}
-
-	md.Services["mangareader"] = &MangaReaderService{
-		Md: md,
-	}
-
-	md.Services["mangawall"] = &MangaWallService{
-		Md: md,
-	}
-
-	md.Services["tenmanga"] = &TenMangaService{
-		Md: md,
-	}
-
-	return md
-}
-
-func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
-	for _, service := range md.Services {
+func Identify(u *url.URL, options *Options) (interface{}, error) {
+	for _, service := range service.Services {
 		if service.Supports(u) {
+			service.SetHTTPRetry(options.HTTPRetry)
 			return service.Identify(u)
 		}
 	}
@@ -79,7 +54,7 @@ func (md *MangaDownloader) Identify(u *url.URL) (interface{}, error) {
 	return nil, fmt.Errorf("url '%s' not supported by any service", u)
 }
 
-func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Options) error {
+func DownloadManga(manga *service.Manga, out string, options *Options) error {
 	name, err := manga.Name()
 	if err != nil {
 		return err
@@ -92,7 +67,7 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Opti
 		return err
 	}
 
-	err = md.downloadChapters(chapters, out, options)
+	err = downloadChapters(chapters, out, options)
 	if err != nil {
 		return err
 	}
@@ -100,8 +75,8 @@ func (md *MangaDownloader) DownloadManga(manga *Manga, out string, options *Opti
 	return nil
 }
 
-func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, options *Options) error {
-	work := make(chan *Chapter)
+func downloadChapters(chapters []*service.Chapter, out string, options *Options) error {
+	work := make(chan *service.Chapter)
 	go func() {
 		for _, chapter := range chapters {
 			work <- chapter
@@ -119,7 +94,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, opt
 	for i := 0; i < parallelChapter; i++ {
 		go func() {
 			for chapter := range work {
-				result <- md.DownloadChapter(chapter, out, options)
+				result <- DownloadChapter(chapter, out, options)
 			}
 			wg.Done()
 		}()
@@ -129,7 +104,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, opt
 		close(result)
 	}()
 
-	errs := make(MultiError, 0)
+	errs := make(utils.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -142,7 +117,7 @@ func (md *MangaDownloader) downloadChapters(chapters []*Chapter, out string, opt
 	return nil
 }
 
-func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options *Options) error {
+func DownloadChapter(chapter *service.Chapter, out string, options *Options) error {
 	name, err := chapter.Name()
 	if err != nil {
 		return err
@@ -150,19 +125,18 @@ func (md *MangaDownloader) DownloadChapter(chapter *Chapter, out string, options
 	out = filepath.Join(out, cleanFilename(name))
 
 	if options.Cbz {
-		return md.downloadChapterCbz(chapter, out, options)
-	} else {
-		return md.downloadChapter(chapter, out, options)
+		return downloadChapterCbz(chapter, out, options)
 	}
+	return downloadChapter(chapter, out, options)
 }
 
-func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options *Options) error {
-	if fileExists(out) {
+func downloadChapter(chapter *service.Chapter, out string, options *Options) error {
+	if utils.FileExists(out) {
 		return nil
 	}
 
 	outTmp := out + ".tmp"
-	if fileExists(outTmp) {
+	if utils.FileExists(outTmp) {
 		err := os.RemoveAll(outTmp)
 		if err != nil {
 			return err
@@ -174,7 +148,7 @@ func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options
 		return err
 	}
 
-	err = md.downloadPages(pages, outTmp, options)
+	err = downloadPages(pages, outTmp, options)
 	if err != nil {
 		return err
 	}
@@ -187,21 +161,21 @@ func (md *MangaDownloader) downloadChapter(chapter *Chapter, out string, options
 	return nil
 }
 
-func (md *MangaDownloader) downloadChapterCbz(chapter *Chapter, out string, options *Options) error {
+func downloadChapterCbz(chapter *service.Chapter, out string, options *Options) error {
 	outCbz := out + ".cbz"
-	if fileExists(outCbz) {
+	if utils.FileExists(outCbz) {
 		return nil
 	}
 
 	outCbzTmp := outCbz + ".tmp"
-	if fileExists(outCbzTmp) {
+	if utils.FileExists(outCbzTmp) {
 		err := os.RemoveAll(outCbzTmp)
 		if err != nil {
 			return err
 		}
 	}
 
-	err := md.downloadChapter(chapter, out, options)
+	err := downloadChapter(chapter, out, options)
 	if err != nil {
 		return err
 	}
@@ -224,9 +198,9 @@ func (md *MangaDownloader) downloadChapterCbz(chapter *Chapter, out string, opti
 	return nil
 }
 
-func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Options) error {
+func downloadPages(pages []*service.Page, out string, options *Options) error {
 	type pageWork struct {
-		page  *Page
+		page  *service.Page
 		index int
 	}
 
@@ -251,7 +225,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Opt
 	for i := 0; i < parallelPage; i++ {
 		go func() {
 			for chapterPageWork := range work {
-				result <- md.downloadPageWithIndex(chapterPageWork.page, out, chapterPageWork.index, options)
+				result <- downloadPageWithIndex(chapterPageWork.page, out, chapterPageWork.index, options)
 			}
 			wg.Done()
 		}()
@@ -261,7 +235,7 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Opt
 		close(result)
 	}()
 
-	errs := make(MultiError, 0)
+	errs := make(utils.MultiError, 0)
 	for err := range result {
 		if err != nil {
 			errs = append(errs, err)
@@ -274,21 +248,21 @@ func (md *MangaDownloader) downloadPages(pages []*Page, out string, options *Opt
 	return nil
 }
 
-func (md *MangaDownloader) downloadPageWithIndex(page *Page, out string, index int, options *Options) error {
+func downloadPageWithIndex(page *service.Page, out string, index int, options *Options) error {
 	filenameFormat := "%0" + strconv.Itoa(options.PageDigitCount) + "d"
 	filename := fmt.Sprintf(filenameFormat, index+1)
-	return md.DownloadPage(page, out, filename, options)
+	return DownloadPage(page, out, filename, options)
 }
 
-func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string, options *Options) error {
+func DownloadPage(page *service.Page, out string, filename string, options *Options) error {
 	out = filepath.Join(out, filename)
 
-	imageUrl, err := page.ImageUrl()
+	imageURL, err := page.ImageURL()
 	if err != nil {
 		return err
 	}
 
-	response, err := md.HttpGet(imageUrl)
+	response, err := utils.HTTPGet(imageURL, options.HTTPRetry)
 	if err != nil {
 		return err
 	}
@@ -325,46 +299,6 @@ func (md *MangaDownloader) DownloadPage(page *Page, out string, filename string,
 	}
 
 	return nil
-}
-
-func (md *MangaDownloader) HttpGet(u *url.URL) (response *http.Response, err error) {
-	request, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.4 Safari/537.36")
-
-	httpRetry := md.HttpRetry
-	if httpRetry < 1 {
-		httpRetry = 1
-	}
-
-	errs := make(MultiError, 0)
-	for i := 0; i < httpRetry; i++ {
-		response, err := http.DefaultClient.Do(request)
-		if err == nil {
-			return response, nil
-		}
-		errs = append(errs, err)
-	}
-	return nil, errs
-}
-
-func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
-	response, err := md.HttpGet(u)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	node, err := html.Parse(response.Body)
-	return node, err
-}
-
-type Options struct {
-	Cbz             bool
-	PageDigitCount  int
-	ParallelChapter int
-	ParallelPage    int
 }
 
 func cleanFilename(name string) string {

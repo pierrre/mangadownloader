@@ -1,4 +1,4 @@
-package mangadownloader
+package utils
 
 import (
 	"bytes"

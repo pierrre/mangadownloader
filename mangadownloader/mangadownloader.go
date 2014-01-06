@@ -1,10 +1,12 @@
 package main
 
 import (
+	md "github.com/pierrre/mangadownloader"
+	"github.com/pierrre/mangadownloader/service"
+
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/pierrre/mangadownloader"
 	"net/url"
 )
 
@@ -28,14 +30,13 @@ func main() {
 		return
 	}
 
-	md := mangadownloader.CreateDefaultMangeDownloader()
-	md.HttpRetry = *httpRetryFlag
-
-	options := &mangadownloader.Options{
+	options := &md.Options{
 		Cbz:             *cbzFlag,
 		PageDigitCount:  *pageDigitCountFlag,
 		ParallelChapter: *parallelChapterFlag,
 		ParallelPage:    *parallelPageFlag,
+
+		HTTPRetry: *httpRetryFlag,
 	}
 
 	for _, arg := range args {
@@ -43,22 +44,22 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		o, err := md.Identify(u)
+		o, err := md.Identify(u, options)
 		if err != nil {
 			panic(err)
 		}
 		switch object := o.(type) {
-		case *mangadownloader.Manga:
+		case *service.Manga:
 			err := md.DownloadManga(object, out, options)
 			if err != nil {
 				panic(err)
 			}
-		case *mangadownloader.Chapter:
+		case *service.Chapter:
 			err := md.DownloadChapter(object, out, options)
 			if err != nil {
 				panic(err)
 			}
-		case *mangadownloader.Page:
+		case *service.Page:
 			err := md.DownloadPage(object, out, "image", options)
 			if err != nil {
 				panic(err)
