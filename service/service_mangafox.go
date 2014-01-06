@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/matrixik/mangadownloader/utils"
+	"github.com/pierrre/mangadownloader/utils"
 
 	"code.google.com/p/go-html-transform/css/selector"
 	"code.google.com/p/go.net/html"
