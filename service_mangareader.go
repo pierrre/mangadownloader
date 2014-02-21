@@ -1,12 +1,13 @@
 package mangadownloader
 
 import (
-	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
+
+	"code.google.com/p/go-html-transform/css/selector"
 )
 
 const (

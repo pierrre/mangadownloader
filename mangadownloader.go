@@ -1,9 +1,7 @@
 package mangadownloader
 
 import (
-	"code.google.com/p/go.net/html"
 	"fmt"
-	"github.com/pierrre/archivefile/zip"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"code.google.com/p/go.net/html"
+	"github.com/pierrre/archivefile/zip"
 )
 
 var (

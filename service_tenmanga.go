@@ -1,11 +1,12 @@
 package mangadownloader
 
 import (
-	"code.google.com/p/go-html-transform/css/selector"
 	"errors"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"code.google.com/p/go-html-transform/css/selector"
 )
 
 var (

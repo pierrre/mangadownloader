@@ -4,8 +4,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/pierrre/mangadownloader"
 	"net/url"
+
+	"github.com/pierrre/mangadownloader"
 )
 
 func main() {

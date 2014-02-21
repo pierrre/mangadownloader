@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
-	"github.com/pierrre/mangadownloader"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os/exec"
 	"runtime"
+
+	"github.com/pierrre/mangadownloader"
 )
 
 const (
