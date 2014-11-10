@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"os"
 
-	"code.google.com/p/go.net/html"
+	"golang.org/x/net/html"
 )
 
 func htmlGetNodeAttribute(node *html.Node, key string) string {

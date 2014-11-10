@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"code.google.com/p/go.net/html"
 	"github.com/pierrre/archivefile/zip"
+	"golang.org/x/net/html"
 )
 
 var (

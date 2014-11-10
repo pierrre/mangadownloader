@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"code.google.com/p/go-html-transform/css/selector"
-	"code.google.com/p/go.net/html"
+	"golang.org/x/net/html"
 )
 
 var (
