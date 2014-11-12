@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/pierrre/archivefile/zip"
 	"golang.org/x/net/html"
 )
@@ -359,6 +360,14 @@ func (md *MangaDownloader) HttpGetHtml(u *url.URL) (*html.Node, error) {
 	defer response.Body.Close()
 	node, err := html.Parse(response.Body)
 	return node, err
+}
+
+func (md *MangaDownloader) HttpGetHtmlDoc(u *url.URL) (*goquery.Document, error) {
+	node, err := md.HttpGetHtml(u)
+	if err != nil {
+		return nil, err
+	}
+	return goquery.NewDocumentFromNode(node), err
 }
 
 type Options struct {

@@ -4,8 +4,14 @@ import (
 	"errors"
 	"net/url"
 	"regexp"
+)
 
-	"code.google.com/p/go-html-transform/css/selector"
+const (
+	serviceMangaWallHtmlSelectorMangaName          = "meta[name='og:title']"
+	serviceMangaWallHtmlSelectorMangaChapters      = ".chapterlistfull a"
+	serviceMangaWallHtmlSelectorChapterPagesSelect = ".pageselect"
+	serviceMangaWallHtmlSelectorChapterPagesOption = "option"
+	serviceMangaWallHtmlSelectorPageImage          = ".scan"
 )
 
 var (
@@ -16,16 +22,10 @@ var (
 
 	serviceMangaWallUrlBase *url.URL
 
-	serviceMangaWallHtmlSelectorMangaName, _          = selector.Selector("meta[name=og:title]")
-	serviceMangaWallHtmlSelectorMangaChapters, _      = selector.Selector(".chapterlistfull a")
-	serviceMangaWallHtmlSelectorChapterPagesSelect, _ = selector.Selector(".pageselect")
-	serviceMangaWallHtmlSelectorChapterPagesOption, _ = selector.Selector("option")
-	serviceMangaWallHtmlSelectorPageImage, _          = selector.Selector(".scan")
-
-	serviceMangaWallRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z\\-]+/?$")
-	serviceMangaWallRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z\\-]+/.+$")
-	serviceMangaWallRegexpChapterName, _     = regexp.Compile("^/manga/[0-9a-z\\-]+/([0-9\\.\\-]+).*$")
-	serviceMangaWallRegexpPageBaseUrlPath, _ = regexp.Compile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
+	serviceMangaWallRegexpIdentifyManga   = regexp.MustCompile("^/manga/[0-9a-z\\-]+/?$")
+	serviceMangaWallRegexpIdentifyChapter = regexp.MustCompile("^/manga/[0-9a-z\\-]+/.+$")
+	serviceMangaWallRegexpChapterName     = regexp.MustCompile("^/manga/[0-9a-z\\-]+/([0-9\\.\\-]+).*$")
+	serviceMangaWallRegexpPageBaseUrlPath = regexp.MustCompile("^(/manga/[0-9a-z\\-]+/[0-9\\.\\-]+).*$")
 )
 
 func init() {
@@ -67,12 +67,12 @@ func (service *MangaWallService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaWallService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(manga.Url)
 	if err != nil {
 		return "", err
 	}
 
-	metaOgTitleNodes := serviceMangaWallHtmlSelectorMangaName.Find(rootNode)
+	metaOgTitleNodes := doc.Find(serviceMangaWallHtmlSelectorMangaName).Nodes
 	if len(metaOgTitleNodes) != 1 {
 		return "", errors.New("Name node not found")
 	}
@@ -83,13 +83,12 @@ func (service *MangaWallService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaWallService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(manga.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	linkNodes := serviceMangaWallHtmlSelectorMangaChapters.Find(rootNode)
-
+	linkNodes := doc.Find(serviceMangaWallHtmlSelectorMangaChapters).Nodes
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
 		chapterUrl := urlCopy(serviceMangaWallUrlBase)
@@ -115,17 +114,10 @@ func (service *MangaWallService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(chapter.Url)
 	if err != nil {
 		return nil, err
 	}
-
-	selectNodes := serviceMangaWallHtmlSelectorChapterPagesSelect.Find(rootNode)
-	if len(selectNodes) != 2 {
-		return nil, errors.New("Select node not found")
-	}
-	selectNode := selectNodes[0]
-	optionNodes := serviceMangaWallHtmlSelectorChapterPagesOption.Find(selectNode)
 
 	matches := serviceMangaWallRegexpPageBaseUrlPath.FindStringSubmatch(chapter.Url.Path)
 	if matches == nil {
@@ -136,6 +128,7 @@ func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error)
 	pageBaseUrl := urlCopy(serviceMangaWallUrlBase)
 	pageBaseUrl.Path = pageBaseUrlPath
 
+	optionNodes := doc.Find(serviceMangaWallHtmlSelectorChapterPagesSelect).First().Find(serviceMangaWallHtmlSelectorChapterPagesOption).Nodes
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
 		pageUrl := urlCopy(pageBaseUrl)
@@ -151,12 +144,12 @@ func (service *MangaWallService) ChapterPages(chapter *Chapter) ([]*Page, error)
 }
 
 func (service *MangaWallService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(page.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaWallHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := doc.Find(serviceMangaWallHtmlSelectorPageImage).Nodes
 	if len(imgNodes) != 1 {
 		return nil, errors.New("Image node not found")
 	}

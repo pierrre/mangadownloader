@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+)
 
-	"code.google.com/p/go-html-transform/css/selector"
+const (
+	serviceMangaHereHtmlSelectorMangaName     = ".detail_list .title h3"
+	serviceMangaHereHtmlSelectorMangaChapters = ".detail_list a"
+	serviceMangaHereHtmlSelectorChapterPages  = ".readpage_top .right option"
+	serviceMangaHereHtmlSelectorPageImage     = "#image"
 )
 
 var (
@@ -14,15 +19,10 @@ var (
 		"mangahere.com",
 	}
 
-	serviceMangaHereHtmlSelectorMangaName, _     = selector.Selector(".detail_list .title h3")
-	serviceMangaHereHtmlSelectorMangaChapters, _ = selector.Selector(".detail_list a")
-	serviceMangaHereHtmlSelectorChapterPages, _  = selector.Selector(".readpage_top .right option")
-	serviceMangaHereHtmlSelectorPageImage, _     = selector.Selector("#image")
-
-	serviceMangaHereRegexpIdentifyManga, _   = regexp.Compile("^/manga/[0-9a-z_]+/?$")
-	serviceMangaHereRegexpIdentifyChapter, _ = regexp.Compile("^/manga/[0-9a-z_]+/.+$")
-	serviceMangaHereRegexpMangaName, _       = regexp.Compile("^Read (.*) Online$")
-	serviceMangaHereRegexpChapterName, _     = regexp.Compile("^.*/c(\\d+(\\.\\d+)?).*$")
+	serviceMangaHereRegexpIdentifyManga   = regexp.MustCompile("^/manga/[0-9a-z_]+/?$")
+	serviceMangaHereRegexpIdentifyChapter = regexp.MustCompile("^/manga/[0-9a-z_]+/.+$")
+	serviceMangaHereRegexpMangaName       = regexp.MustCompile("^Read (.*) Online$")
+	serviceMangaHereRegexpChapterName     = regexp.MustCompile("^.*/c(\\d+(\\.\\d+)?).*$")
 )
 
 type MangaHereService struct {
@@ -58,12 +58,12 @@ func (service *MangaHereService) Identify(u *url.URL) (interface{}, error) {
 }
 
 func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(manga.Url)
 	if err != nil {
 		return "", err
 	}
 
-	nameNodes := serviceMangaHereHtmlSelectorMangaName.Find(rootNode)
+	nameNodes := doc.Find(serviceMangaHereHtmlSelectorMangaName).Nodes
 	if len(nameNodes) != 1 {
 		return "", fmt.Errorf("html node '%s' (manga name) not found in '%s'", serviceMangaHereHtmlSelectorMangaName, manga.Url)
 	}
@@ -84,12 +84,12 @@ func (service *MangaHereService) MangaName(manga *Manga) (string, error) {
 }
 
 func (service *MangaHereService) MangaChapters(manga *Manga) ([]*Chapter, error) {
-	rootNode, err := service.Md.HttpGetHtml(manga.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(manga.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	linkNodes := serviceMangaHereHtmlSelectorMangaChapters.Find(rootNode)
+	linkNodes := doc.Find(serviceMangaHereHtmlSelectorMangaChapters).Nodes
 	chapters := make([]*Chapter, 0, len(linkNodes))
 	for _, linkNode := range linkNodes {
 		chapterUrl, err := url.Parse(htmlGetNodeAttribute(linkNode, "href"))
@@ -118,13 +118,12 @@ func (service *MangaHereService) ChapterName(chapter *Chapter) (string, error) {
 }
 
 func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error) {
-	rootNode, err := service.Md.HttpGetHtml(chapter.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(chapter.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	optionNodes := serviceMangaHereHtmlSelectorChapterPages.Find(rootNode)
-
+	optionNodes := doc.Find(serviceMangaHereHtmlSelectorChapterPages).Nodes
 	pages := make([]*Page, 0, len(optionNodes))
 	for _, optionNode := range optionNodes {
 		pageUrl, err := url.Parse(htmlGetNodeAttribute(optionNode, "value"))
@@ -142,12 +141,12 @@ func (service *MangaHereService) ChapterPages(chapter *Chapter) ([]*Page, error)
 }
 
 func (service *MangaHereService) PageImageUrl(page *Page) (*url.URL, error) {
-	rootNode, err := service.Md.HttpGetHtml(page.Url)
+	doc, err := service.Md.HttpGetHtmlDoc(page.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	imgNodes := serviceMangaHereHtmlSelectorPageImage.Find(rootNode)
+	imgNodes := doc.Find(serviceMangaHereHtmlSelectorPageImage).Nodes
 	if len(imgNodes) != 1 {
 		return nil, fmt.Errorf("html node '%s' (page image url) not found in '%s'", serviceMangaHereHtmlSelectorPageImage, page.Url)
 	}
