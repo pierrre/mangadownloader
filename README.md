@@ -1,6 +1,8 @@
 # Manga Downloader
 A manga downloader written in Go (Golang).
 
+[![Build Status](https://travis-ci.org/pierrre/mangadownloader.png?branch=master)](https://travis-ci.org/pierrre/mangadownloader)
+
 ## Features
 - Download manga from websites (more to come)
     - http://www.mangareader.net
@@ -11,9 +13,6 @@ A manga downloader written in Go (Golang).
 - CBZ support
 - Parallel download
 - Command line
-
-## Binaries
-https://www.dropbox.com/sh/zc94728pgccei17/mskEqE4XuM
 
 ## Usage
 ```
@@ -36,19 +35,8 @@ Examples:
 ./mangadownloader http://mangafox.me/manga/berserk/c134/1.html
 ```
 
-## Status
-[![Build Status](https://travis-ci.org/pierrre/mangadownloader.png?branch=master)](https://travis-ci.org/pierrre/mangadownloader)
-
-## Build
-`go build mangadownloader/mangadownloader.go`
-
-or
-
-`go get github.com/pierrre/mangadownloader/mangadownloader` and the binary will be in your `GOPATH/bin`
-
-## Help
-- Twitter: @pierredurand87
-- Github issue
+## Documentation
+https://godoc.org/github.com/pierrre/mangadownloader
 
 ## TODO
 - More services
